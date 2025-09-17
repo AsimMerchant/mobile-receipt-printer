@@ -296,9 +296,65 @@
                 grid-template-columns: 1fr;
             }
         }
+        
+        /* Fullscreen Mode Styles */
+        .fullscreen-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(102, 126, 234, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .fullscreen-btn:hover {
+            background: rgba(102, 126, 234, 1);
+            transform: scale(1.1);
+        }
+        
+        .fullscreen-notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            font-size: 16px;
+            z-index: 2000;
+            display: none;
+        }
+        
+        body.fullscreen-active {
+            padding: 10px;
+        }
+        
+        body.fullscreen-active .container {
+            max-width: none;
+            width: 100%;
+        }
     </style>
 </head>
 <body>
+    <!-- Fullscreen Button -->
+    <button class="fullscreen-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">
+        ⛶
+    </button>
+    
+    <!-- Fullscreen Notification -->
+    <div class="fullscreen-notification" id="fullscreenNotification">
+        Press F11 or use browser fullscreen to prevent accidental exit
+    </div>
+    
     <div class="container">
         <!-- Header -->
         <div class="header">
@@ -386,6 +442,75 @@
     </div>
 
     <script>
+        // ========================================
+        // FULLSCREEN FUNCTIONALITY
+        // ========================================
+        
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                enterFullscreen();
+            } else {
+                exitFullscreen();
+            }
+        }
+        
+        function enterFullscreen() {
+            const docElement = document.documentElement;
+            
+            if (docElement.requestFullscreen) {
+                docElement.requestFullscreen().then(() => {
+                    document.body.classList.add('fullscreen-active');
+                    showFullscreenNotification();
+                });
+            } else if (docElement.webkitRequestFullscreen) {
+                docElement.webkitRequestFullscreen();
+                document.body.classList.add('fullscreen-active');
+                showFullscreenNotification();
+            } else if (docElement.msRequestFullscreen) {
+                docElement.msRequestFullscreen();
+                document.body.classList.add('fullscreen-active');
+                showFullscreenNotification();
+            } else {
+                // Fallback for browsers that don't support fullscreen API
+                showFullscreenNotification();
+            }
+        }
+        
+        function exitFullscreen() {
+            if (document.exitFullscreen) {
+                document.exitFullscreen().then(() => {
+                    document.body.classList.remove('fullscreen-active');
+                });
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+                document.body.classList.remove('fullscreen-active');
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+                document.body.classList.remove('fullscreen-active');
+            }
+        }
+        
+        function showFullscreenNotification() {
+            const notification = document.getElementById('fullscreenNotification');
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+        
+        // Handle fullscreen change events
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement) {
+                document.body.classList.remove('fullscreen-active');
+            }
+        });
+        
+        document.addEventListener('webkitfullscreenchange', () => {
+            if (!document.webkitFullscreenElement) {
+                document.body.classList.remove('fullscreen-active');
+            }
+        });
+        
         // ========================================
         // CORE DATA MANAGEMENT FUNCTIONS
         // ========================================
