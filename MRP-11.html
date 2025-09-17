@@ -356,15 +356,6 @@
     </div>
     
     <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <h1>📱 Mobile Receipt Printer v11</h1>
-            <p>Simplified interface for quick receipt generation</p>
-            <div class="server-status" id="serverStatus">
-                🌐 Server: Ready
-            </div>
-        </div>
-
         <!-- Main Form -->
         <div class="form-card" id="inputSection">
             <div class="input-group">
@@ -395,18 +386,6 @@
             </div>
         </div>
 
-        <!-- Control Panel -->
-        <div class="control-panel">
-            <div class="control-row">
-                <button onclick="testPrint()" class="btn btn-danger btn-control">
-                    🧪 Test Print
-                </button>
-                <button onclick="toggleNameListSection()" class="btn btn-secondary btn-control">
-                    📝 Manage Names
-                </button>
-            </div>
-        </div>
-
         <!-- Receipt Preview -->
         <div id="receiptPreview" class="preview-card">
             <h3>📄 Receipt Preview</h3>
@@ -419,25 +398,6 @@
                     📤 Share
                 </button>
             </div>
-        </div>
-
-        <!-- Name Management Section -->
-        <div id="nameListSection" class="utility-section">
-            <h3>📝 Manage Name Lists</h3>
-            
-            <div class="input-group">
-                <label for="billerNamesInput">Biller Names (one per line):</label>
-                <textarea id="billerNamesInput" class="textarea-input" placeholder="Enter biller names, one per line"></textarea>
-            </div>
-
-            <div class="input-group">
-                <label for="volunteerNamesInput">Volunteer Names (one per line):</label>
-                <textarea id="volunteerNamesInput" class="textarea-input" placeholder="Enter volunteer names, one per line"></textarea>
-            </div>
-
-            <button onclick="saveNameLists()" class="btn btn-success">
-                💾 Save Names
-            </button>
         </div>
     </div>
 
@@ -725,85 +685,6 @@ Amount: Rs. ${amount}`;
         }
 
         // ========================================
-        // TEST PRINT FUNCTION
-        // ========================================
-
-        function testPrint() {
-            const savedServerAddress = localStorage.getItem('serverAddress');
-            if (!savedServerAddress) {
-                alert('Please configure your server address first.\n\nUse MRP-11-settings.html to set up your server.');
-                return;
-            }
-
-            if (!confirm('This will create a test receipt with sample data. Continue?')) {
-                return;
-            }
-
-            // Fill form with test data
-            document.getElementById('biller').value = 'Test Biller';
-            document.getElementById('volunteer').value = 'Test Volunteer';
-            document.getElementById('amount').value = '100.00';
-
-            // Create receipt
-            previewReceipt();
-
-            // Auto-print after short delay
-            setTimeout(() => {
-                if (confirm('Test receipt created! Send to printer?')) {
-                    printToBluetoothPrinter();
-                }
-            }, 500);
-        }
-
-        // ========================================
-        // NAME MANAGEMENT FUNCTIONS
-        // ========================================
-
-        function toggleNameListSection() {
-            const section = document.getElementById('nameListSection');
-            section.classList.toggle('show');
-            
-            if (section.classList.contains('show')) {
-                section.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        }
-
-        function saveNameLists() {
-            const billerInput = document.getElementById('billerNamesInput').value.trim();
-            const volunteerInput = document.getElementById('volunteerNamesInput').value.trim();
-
-            let savedCount = 0;
-
-            if (billerInput) {
-                const billerNames = billerInput.split('\n').map(n => n.trim()).filter(n => n);
-                billerNames.forEach(name => {
-                    saveName("billerNames", name);
-                    savedCount++;
-                });
-            }
-
-            if (volunteerInput) {
-                const volunteerNames = volunteerInput.split('\n').map(n => n.trim()).filter(n => n);
-                volunteerNames.forEach(name => {
-                    saveName("volunteerNames", name);
-                    savedCount++;
-                });
-            }
-
-            if (savedCount > 0) {
-                populateDatalist("billerNames", "billerList");
-                populateDatalist("volunteerNames", "volunteerList");
-                alert(`Successfully saved ${savedCount} names!`);
-                
-                // Clear inputs and hide section
-                document.getElementById('billerNamesInput').value = '';
-                document.getElementById('volunteerNamesInput').value = '';
-                document.getElementById('nameListSection').classList.remove('show');
-            } else {
-                alert('Please enter some names to save.');
-            }
-        }
-        // ========================================
         // INITIALIZATION
         // ========================================
 
@@ -815,8 +696,23 @@ Amount: Rs. ${amount}`;
             // Update server status
             updateServerStatus();
             
-            // Focus on first input
-            document.getElementById('biller').focus();
+            // Check for test parameter in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('test') === 'true') {
+                // Fill form with test data
+                document.getElementById('biller').value = 'Test Biller';
+                document.getElementById('volunteer').value = 'Test Volunteer';
+                document.getElementById('amount').value = '100.00';
+                
+                // Create receipt preview
+                setTimeout(() => {
+                    previewReceipt();
+                    alert('Test receipt created! You can now print it using the Print button.');
+                }, 500);
+            } else {
+                // Focus on first input for normal use
+                document.getElementById('biller').focus();
+            }
             
             // Test server connection
             const serverAddress = localStorage.getItem('serverAddress');
@@ -825,14 +721,18 @@ Amount: Rs. ${amount}`;
                     .then(response => {
                         if (response.ok) {
                             const statusElement = document.getElementById('serverStatus');
-                            statusElement.innerHTML = '✅ Server: Online';
-                            statusElement.style.background = '#28a745';
+                            if (statusElement) {
+                                statusElement.innerHTML = '✅ Server: Online';
+                                statusElement.style.background = '#28a745';
+                            }
                         }
                     })
                     .catch(() => {
                         const statusElement = document.getElementById('serverStatus');
-                        statusElement.innerHTML = '❌ Server: Offline';
-                        statusElement.style.background = '#dc3545';
+                        if (statusElement) {
+                            statusElement.innerHTML = '❌ Server: Offline';
+                            statusElement.style.background = '#dc3545';
+                        }
                     });
             }
         });
