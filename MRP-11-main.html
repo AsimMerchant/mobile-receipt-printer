@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Receipt Printer - Landing Page</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #28a745;
+            color: white;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .card h2 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .icon {
+            font-size: 1.5em;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 5px;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(45deg, #6c757d, #495057);
+        }
+        
+        .btn-success {
+            background: linear-gradient(45deg, #28a745, #20c997);
+        }
+        
+        .btn-info {
+            background: linear-gradient(45deg, #17a2b8, #6f42c1);
+        }
+        
+        .setup-steps {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(102, 126, 234, 0.05);
+            border-left: 4px solid #667eea;
+        }
+        
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        
+        .step-content h4 {
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+            margin: 10px 0;
+            border-left: 4px solid #667eea;
+        }
+        
+        .version-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .version-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .version-card:hover {
+            transform: translateY(-3px);
+        }
+        
+        .version-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .badge-latest {
+            background: #28a745;
+            color: white;
+        }
+        
+        .badge-stable {
+            background: #17a2b8;
+            color: white;
+        }
+        
+        .badge-legacy {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .network-info {
+            background: rgba(255, 248, 220, 0.9);
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .network-info h4 {
+            color: #d63031;
+            margin-bottom: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+        }
+        
+        .biller-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 10px;
+            background: white;
+            margin: 15px 0;
+        }
+        
+        .biller-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .biller-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        .biller-info {
+            flex-grow: 1;
+        }
+        
+        .biller-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+        
+        .biller-stats {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .biller-actions {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+            min-width: 80px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header">
+            <h1>📱 Mobile Receipt Printer</h1>
+            <p>Transform your Android phone into a powerful receipt printing server</p>
+            <div class="status-indicator" id="serverStatus">
+                🌐 Server: receipt.com:8080
+            </div>
+        </div>
+
+        <!-- Quick Navigation -->
+        <div class="card">
+            <h2><span class="icon">🚀</span>Quick Start</h2>
+            <p>Jump directly to the receipt interface if your server is already running:</p>
+            <div style="margin-top: 15px;">
+                <a href="MRP-11.html" class="btn btn-success">📄 Create Receipt</a>
+                <a href="MRP-11-settings.html" class="btn btn-info">⚙️ Server Settings</a>
+                <button onclick="testConnection()" class="btn btn-secondary">🧪 Test Connection</button>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid">
+            <!-- Termux Setup Card -->
+            <div class="card">
+                <h2><span class="icon">📱</span>Termux Server Setup</h2>
+                <p>Complete guide to set up your Android phone as a receipt printing server using Termux.</p>
+                <div style="margin-top: 15px;">
+                    <button onclick="toggleSetupGuide()" class="btn">📋 Setup Guide</button>
+                    <a href="#troubleshooting" class="btn btn-secondary">🔧 Troubleshooting</a>
+                </div>
+            </div>
+
+            <!-- Version Library Card -->
+            <div class="card">
+                <h2><span class="icon">📚</span>Version Library</h2>
+                <p>Access all versions of Mobile Receipt Printer for different needs and compatibility.</p>
+                <div class="version-grid">
+                    <div class="version-card">
+                        <div class="version-badge badge-latest">LATEST</div>
+                        <h4>MRP-11</h4>
+                        <p>Simplified Interface</p>
+                        <a href="MRP-11.html" class="btn">Launch</a>
+                    </div>
+                    <div class="version-card">
+                        <div class="version-badge badge-stable">STABLE</div>
+                        <h4>MRP-10</h4>
+                        <p>Full Featured</p>
+                        <a href="MRP-10.html" class="btn">Launch</a>
+                    </div>
+                    <div class="version-card">
+                        <div class="version-badge badge-legacy">LEGACY</div>
+                        <h4>MRP-9</h4>
+                        <p>Original Version</p>
+                        <a href="MRP-9.html" class="btn">Launch</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Testing & Diagnostics Card -->
+            <div class="card">
+                <h2><span class="icon">🧪</span>Testing & Diagnostics</h2>
+                <p>Test your server connection and diagnose network issues.</p>
+                <div style="margin-top: 15px;">
+                    <button onclick="runDiagnostics()" class="btn">🔍 Run Diagnostics</button>
+                    <button onclick="showServerInfo()" class="btn btn-info">📊 Server Info</button>
+                    <a href="response.php" target="_blank" class="btn btn-secondary">🔗 API Test</a>
+                </div>
+                <div id="diagnosticsResults" style="margin-top: 15px; display: none;"></div>
+            </div>
+        </div>
+
+        <!-- Biller Reports Section -->
+        <div class="card">
+            <h2><span class="icon">📊</span>Biller Reports & Data Management</h2>
+            <p>View available biller reports, download data, and manage stored receipt information.</p>
+            
+            <div style="margin: 20px 0;">
+                <button onclick="refreshBillerList()" class="btn btn-info">🔄 Refresh Available Reports</button>
+                <button onclick="downloadAllReports()" class="btn btn-success">📦 Download All Reports</button>
+                <button onclick="clearAllData()" class="btn btn-danger">🗑️ Clear All Data</button>
+            </div>
+            
+            <div id="billerReportsList" class="biller-list">
+                <div style="text-align: center; color: #666; padding: 20px;">
+                    Click "Refresh Available Reports" to see available biller data
+                </div>
+            </div>
+        </div>
+
+        <!-- Setup Guide (Initially Hidden) -->
+        <div id="setupGuide" class="setup-steps" style="display: none;">
+            <h2>📱 Complete Termux Setup Guide</h2>
+            
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h4>Install Termux</h4>
+                    <p>Download and install Termux from F-Droid or Google Play Store. F-Droid version is recommended for latest updates.</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h4>Initial Setup</h4>
+                    <p>Open Termux and run the initial setup commands:</p>
+                    <div class="code-block">pkg update && pkg upgrade -y<br>pkg install php curl wget git python openssh</div>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h4>Storage Access</h4>
+                    <p>Grant Termux access to your device storage:</p>
+                    <div class="code-block">termux-setup-storage</div>
+                    <p>Allow the permission when prompted.</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h4>Download Files</h4>
+                    <p>Navigate to shared storage and download the MRP files:</p>
+                    <div class="code-block">cd /storage/emulated/0/<br>wget https://your-server.com/MRP-11.html<br>wget https://your-server.com/response.php</div>
+                    <p>Or transfer files manually to your Downloads folder.</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">5</div>
+                <div class="step-content">
+                    <h4>Start Server</h4>
+                    <p>Start the PHP server to host your files:</p>
+                    <div class="code-block">php -S 0.0.0.0:8080</div>
+                    <p>Server will start and display "Development Server started"</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">6</div>
+                <div class="step-content">
+                    <h4>Find Your IP</h4>
+                    <p>In a new Termux session, find your phone's IP address:</p>
+                    <div class="code-block">ip route get 1.1.1.1 | grep -oP 'src \K\S+'</div>
+                    <p>Note this IP address for network access.</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">7</div>
+                <div class="step-content">
+                    <h4>Test Access</h4>
+                    <p>Test server access from another device:</p>
+                    <div class="code-block">http://[YOUR-PHONE-IP]:8080</div>
+                    <p>You should see this landing page.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Troubleshooting Section -->
+        <div id="troubleshooting" class="setup-steps">
+            <h2>🔧 Troubleshooting Guide</h2>
+            
+            <div class="step">
+                <div class="step-number">❗</div>
+                <div class="step-content">
+                    <h4>Server Won't Start</h4>
+                    <ul style="margin-left: 20px;">
+                        <li><strong>Port in use:</strong> Try <code>php -S 0.0.0.0:8081</code></li>
+                        <li><strong>Permission denied:</strong> Check file permissions</li>
+                        <li><strong>PHP not found:</strong> Reinstall with <code>pkg install php</code></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">❗</div>
+                <div class="step-content">
+                    <h4>Can't Access from Other Devices</h4>
+                    <ul style="margin-left: 20px;">
+                        <li><strong>Wrong IP:</strong> Re-check phone IP address</li>
+                        <li><strong>Firewall:</strong> Disable phone firewall temporarily</li>
+                        <li><strong>Network isolation:</strong> Ensure devices on same network</li>
+                        <li><strong>Server binding:</strong> Use <code>0.0.0.0:8080</code> not <code>localhost</code></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">❗</div>
+                <div class="step-content">
+                    <h4>Receipt Printing Issues</h4>
+                    <ul style="margin-left: 20px;">
+                        <li><strong>Printer not found:</strong> Check Bluetooth pairing</li>
+                        <li><strong>Print failure:</strong> Verify printer supports URL schemes</li>
+                        <li><strong>Format issues:</strong> Test with simpler receipt data</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleSetupGuide() {
+            const guide = document.getElementById('setupGuide');
+            const isVisible = guide.style.display !== 'none';
+            guide.style.display = isVisible ? 'none' : 'block';
+            
+            // Hide other sections
+            if (!isVisible) {
+                // No other sections to hide
+            }
+        }
+
+        function testConnection() {
+            const resultsDiv = document.getElementById('diagnosticsResults');
+            resultsDiv.style.display = 'block';
+            resultsDiv.innerHTML = '<div class="code-block">🧪 Testing connection...<br><br>✅ Landing page loaded successfully<br>⏳ Testing API endpoint...</div>';
+            
+            // Test API endpoint
+            fetch('response.php')
+                .then(response => {
+                    if (response.ok) {
+                        resultsDiv.innerHTML = '<div class="code-block">🧪 Connection Test Results:<br><br>✅ Landing page: OK<br>✅ API endpoint: OK<br>✅ Server is running properly<br><br>🎉 Ready to create receipts!</div>';
+                    } else {
+                        resultsDiv.innerHTML = '<div class="code-block">🧪 Connection Test Results:<br><br>✅ Landing page: OK<br>❌ API endpoint: Error ' + response.status + '<br>⚠️ Check response.php file</div>';
+                    }
+                })
+                .catch(error => {
+                    resultsDiv.innerHTML = '<div class="code-block">🧪 Connection Test Results:<br><br>✅ Landing page: OK<br>❌ API endpoint: Network error<br>⚠️ Check server configuration</div>';
+                });
+        }
+
+        function runDiagnostics() {
+            const resultsDiv = document.getElementById('diagnosticsResults');
+            resultsDiv.style.display = 'block';
+            
+            const diagnostics = [
+                '🔍 Running system diagnostics...',
+                '',
+                '📱 User Agent: ' + navigator.userAgent.substring(0, 50) + '...',
+                '🌐 Page URL: ' + window.location.href,
+                '⏰ Current Time: ' + new Date().toLocaleString(),
+                '📶 Online Status: ' + (navigator.onLine ? 'Connected' : 'Offline'),
+                '🖥️ Screen Size: ' + window.screen.width + 'x' + window.screen.height,
+                '📱 Viewport: ' + window.innerWidth + 'x' + window.innerHeight,
+                '',
+                '🔧 Server Status: ' + (window.location.hostname === 'localhost' ? 'Local' : 'Network'),
+                '📡 Protocol: ' + window.location.protocol,
+                '🌍 Port: ' + (window.location.port || '80'),
+            ];
+            
+            resultsDiv.innerHTML = '<div class="code-block">' + diagnostics.join('<br>') + '</div>';
+        }
+
+        function showServerInfo() {
+            const resultsDiv = document.getElementById('diagnosticsResults');
+            resultsDiv.style.display = 'block';
+            
+            const info = [
+                '📊 Server Information:',
+                '',
+                '🌐 Access URL: ' + window.location.origin,
+                '📂 Current Page: ' + window.location.pathname,
+                '🔗 Full URL: ' + window.location.href,
+                '',
+                '📱 Recommended Mobile Access:',
+                '• Bookmark this page for easy access',
+                '• Add to home screen on mobile devices',
+                '• Use QR code for sharing with other devices',
+                '',
+                '🔧 Available Endpoints:',
+                '• Landing Page: /',
+                '• Receipt Interface: /MRP-11.html',
+                '• Settings Page: /MRP-11-settings.html',
+                '• API Endpoint: /response.php',
+                '• Legacy Versions: /MRP-9.html, /MRP-10.html',
+            ];
+            
+            resultsDiv.innerHTML = '<div class="code-block">' + info.join('<br>') + '</div>';
+        }
+
+        // ========================================
+        // BILLER REPORTS FUNCTIONS
+        // ========================================
+
+        function getAllBillerNames() {
+            const billerNames = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                // Skip system keys and check if it's receipt data
+                if (key && !['serverAddress', 'serverAddresses', 'advancedSettings'].includes(key)) {
+                    try {
+                        const data = JSON.parse(localStorage.getItem(key));
+                        if (data && data.receipts && Array.isArray(data.receipts)) {
+                            billerNames.push(key);
+                        }
+                    } catch (e) {
+                        // Skip invalid JSON data
+                    }
+                }
+            }
+            return billerNames;
+        }
+
+        function getBillerData(billerName) {
+            const data = localStorage.getItem(billerName);
+            if (!data) return { receipts: [], totalAmount: 0 };
+            
+            try {
+                return JSON.parse(data);
+            } catch (e) {
+                return { receipts: [], totalAmount: 0 };
+            }
+        }
+
+        function refreshBillerList() {
+            const billerNames = getAllBillerNames();
+            const listElement = document.getElementById('billerReportsList');
+            
+            if (billerNames.length === 0) {
+                listElement.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">No biller data found. Create some receipts first!</div>';
+                return;
+            }
+            
+            listElement.innerHTML = billerNames.map(billerName => {
+                const billerData = getBillerData(billerName);
+                const receiptCount = billerData.receipts.length;
+                const totalAmount = billerData.totalAmount || 0;
+                
+                return `
+                    <div class="biller-item">
+                        <div class="biller-info">
+                            <div class="biller-name">${billerName}</div>
+                            <div class="biller-stats">
+                                📄 ${receiptCount} receipt${receiptCount !== 1 ? 's' : ''} • 
+                                💰 Rs. ${totalAmount.toFixed(2)} total
+                            </div>
+                        </div>
+                        <div class="biller-actions">
+                            <button onclick="downloadBillerReport('${billerName}')" class="btn btn-success btn-small">📥 Download</button>
+                            <button onclick="viewBillerDetails('${billerName}')" class="btn btn-info btn-small">👁️ View</button>
+                            <button onclick="clearBillerData('${billerName}')" class="btn btn-danger btn-small">🗑️ Clear</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function downloadBillerReport(billerName) {
+            const billerData = getBillerData(billerName);
+            
+            if (!billerData.receipts.length) {
+                alert('No receipts found for this biller.');
+                return;
+            }
+
+            // Generate report
+            let report = `Biller Report: ${billerName}\n`;
+            report += '============================\n\n';
+
+            billerData.receipts.forEach((receipt, index) => {
+                report += `Receipt #${receipt.number}\n`;
+                report += '============================\n';
+                report += `Date: ${receipt.date}\n`;
+                report += `Time: ${receipt.time}\n`;
+                report += `Volunteer: ${receipt.volunteer}\n`;
+                report += `Amount: Rs. ${receipt.amount}\n`;
+                report += '============================\n\n';
+            });
+
+            report += `Total Amount: Rs. ${billerData.totalAmount}\n`;
+            report += `Total Receipts: ${billerData.receipts.length}\n`;
+            report += `Report Generated: ${new Date().toLocaleString()}\n`;
+            report += '============================\n';
+
+            // Download report
+            const blob = new Blob([report], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${billerName}_report_${new Date().toISOString().split('T')[0]}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+
+            alert(`Report downloaded for "${billerName}"!`);
+        }
+
+        function viewBillerDetails(billerName) {
+            const billerData = getBillerData(billerName);
+            
+            if (!billerData.receipts.length) {
+                alert('No receipts found for this biller.');
+                return;
+            }
+
+            let details = `📊 BILLER DETAILS: ${billerName}\n\n`;
+            details += `📄 Total Receipts: ${billerData.receipts.length}\n`;
+            details += `💰 Total Amount: Rs. ${billerData.totalAmount.toFixed(2)}\n\n`;
+            details += `📋 RECENT RECEIPTS:\n`;
+            details += '──────────────────\n';
+
+            // Show last 5 receipts
+            const recentReceipts = billerData.receipts.slice(-5).reverse();
+            recentReceipts.forEach(receipt => {
+                details += `#${receipt.number} - ${receipt.date} - Rs. ${receipt.amount}\n`;
+                details += `   Volunteer: ${receipt.volunteer}\n\n`;
+            });
+
+            if (billerData.receipts.length > 5) {
+                details += `... and ${billerData.receipts.length - 5} more receipts\n`;
+            }
+
+            alert(details);
+        }
+
+        function clearBillerData(billerName) {
+            if (!confirm(`Clear all data for "${billerName}"?\\n\\nThis will permanently delete all receipts for this biller.`)) {
+                return;
+            }
+
+            localStorage.removeItem(billerName);
+            alert(`Data cleared for "${billerName}".`);
+            refreshBillerList();
+        }
+
+        function downloadAllReports() {
+            const billerNames = getAllBillerNames();
+            
+            if (billerNames.length === 0) {
+                alert('No biller data found to download.');
+                return;
+            }
+
+            if (!confirm(`Download reports for all ${billerNames.length} biller${billerNames.length !== 1 ? 's' : ''}?`)) {
+                return;
+            }
+
+            // Generate combined report
+            let combinedReport = `COMBINED BILLER REPORTS\n`;
+            combinedReport += `Generated: ${new Date().toLocaleString()}\n`;
+            combinedReport += `Total Billers: ${billerNames.length}\n`;
+            combinedReport += '========================================\n\n';
+
+            let grandTotal = 0;
+            let totalReceipts = 0;
+
+            billerNames.forEach(billerName => {
+                const billerData = getBillerData(billerName);
+                combinedReport += `BILLER: ${billerName}\n`;
+                combinedReport += `Receipts: ${billerData.receipts.length}\n`;
+                combinedReport += `Total: Rs. ${billerData.totalAmount.toFixed(2)}\n`;
+                combinedReport += '----------------------------------------\n';
+
+                billerData.receipts.forEach(receipt => {
+                    combinedReport += `  #${receipt.number} - ${receipt.date} - ${receipt.volunteer} - Rs. ${receipt.amount}\n`;
+                });
+
+                combinedReport += '\n';
+                grandTotal += billerData.totalAmount;
+                totalReceipts += billerData.receipts.length;
+            });
+
+            combinedReport += '========================================\n';
+            combinedReport += `GRAND TOTALS:\n`;
+            combinedReport += `Total Billers: ${billerNames.length}\n`;
+            combinedReport += `Total Receipts: ${totalReceipts}\n`;
+            combinedReport += `Grand Total Amount: Rs. ${grandTotal.toFixed(2)}\n`;
+            combinedReport += '========================================\n';
+
+            // Download combined report
+            const blob = new Blob([combinedReport], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `all_biller_reports_${new Date().toISOString().split('T')[0]}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+
+            alert(`Combined report downloaded!\\n\\n📊 ${billerNames.length} billers\\n📄 ${totalReceipts} receipts\\n💰 Rs. ${grandTotal.toFixed(2)} total`);
+        }
+
+        function clearAllData() {
+            const billerNames = getAllBillerNames();
+            
+            if (billerNames.length === 0) {
+                alert('No biller data found to clear.');
+                return;
+            }
+
+            if (!confirm(`⚠️ DANGER: Clear ALL biller data?\\n\\nThis will permanently delete:\\n• ${billerNames.length} biller${billerNames.length !== 1 ? 's' : ''}\\n• All receipt history\\n\\nThis cannot be undone!`)) {
+                return;
+            }
+
+            if (!confirm('Are you absolutely sure? This will delete everything!')) {
+                return;
+            }
+
+            // Clear all biller data
+            billerNames.forEach(billerName => {
+                localStorage.removeItem(billerName);
+            });
+
+            alert(`All biller data cleared!\\n\\nDeleted ${billerNames.length} biller records.`);
+            refreshBillerList();
+        }
+
+        // Auto-test connection on page load
+        window.addEventListener('load', function() {
+            // Small delay to let page fully render
+            setTimeout(function() {
+                fetch('response.php', { method: 'HEAD' })
+                    .then(response => {
+                        const statusElement = document.getElementById('serverStatus');
+                        if (response.ok) {
+                            statusElement.innerHTML = '✅ Server: receipt.com:8080 (API Ready)';
+                            statusElement.style.background = '#28a745';
+                        } else {
+                            statusElement.innerHTML = '⚠️ Server: receipt.com:8080 (API Issues)';
+                            statusElement.style.background = '#ffc107';
+                        }
+                    })
+                    .catch(error => {
+                        const statusElement = document.getElementById('serverStatus');
+                        statusElement.innerHTML = '❌ Server: receipt.com:8080 (Check Setup)';
+                        statusElement.style.background = '#dc3545';
+                    });
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

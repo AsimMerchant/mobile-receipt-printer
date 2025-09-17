@@ -1,0 +1,41 @@
+# Development files
+*.tmp
+*.log
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# System files
+desktop.ini
+.directory
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# Test files
+test_*
+debug_*
+
+# Runtime files
+*.pid
+*.socket
+
+# Temporary receipts
+temp_receipt_*
+test_receipt_*
+
+# Local configuration (if any)
+local_config.json
+.env
+
+# Cache directories
+cache/
+temp/

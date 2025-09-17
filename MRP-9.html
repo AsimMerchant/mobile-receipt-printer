@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Mobile Receipt Printer</title>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            padding-bottom: 90px; /* Add padding to prevent content from being hidden by the footer */
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        input:disabled {
+            background-color: #f1f1f1;
+            cursor: not-allowed;
+        }
+
+        /* Styles for the footer */
+        #footer {
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            background-color: #f1f1f1;
+            padding: 10px 0;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+        }
+        #footer-content {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+    </style>
+</head>
+<body>
+<div id="inputSection">
+<h2>Mobile Receipt Printer</h2>
+<div class="input-group">
+<label for="biller">Biller Name:</label>
+<input id="biller" list="billerList" required="" type="text"/><datalist id="billerList"></datalist>
+</div>
+<div class="input-group">
+<label for="volunteer">Volunteer Name:</label>
+<input id="volunteer" list="volunteerList" required="" type="text"/><datalist id="volunteerList"></datalist>
+</div>
+<div class="input-group">
+<label for="amount">Amount (Rs.):</label>
+<input id="amount" required="" type="number"/>
+</div>
+<button id="createReceiptBtn" onclick="previewReceipt()">Create Receipt</button>
+<div id="actionButtons" style="margin-top: 20px; display: none;">
+<button onclick="clearFormAndShow()" style="background-color: #666; margin-bottom: 10px;">Create New Receipt</button>
+</div>
+</div>
+
+<!-- Inline Preview Section (Initially Hidden) -->
+<div id="inlinePreview" style="display:none; margin-top: 20px; border: 2px solid #4CAF50; padding: 20px; border-radius: 5px; background-color: #fafffa;">
+    <h3 style="margin-top:0; text-align:center;">Receipt Preview</h3>
+    <pre id="inlinePreviewContent" style="white-space: pre-wrap; font-family: monospace; font-size: 1.2em; line-height: 1.5;"></pre>
+    <div style="margin-top: 15px; display: flex; gap: 10px;">
+        <button onclick="printToBluetoothPrinter()" style="background-color: #FF9800; width: 50%;">Bluetooth Print</button>
+        <button onclick="shareReceipt()" style="background-color: #2196F3; width: 50%;">Share</button>
+    </div>
+</div>
+
+<!-- Collapsible utility sections -->
+<div style="margin-top: 20px;">
+    <button onclick="toggleNameListSection()" style="background-color: #2196F3; margin-top: 10px;">Add Name List</button>
+    <div id="nameListSection" style="display:none; margin-top: 15px; border: 1px solid #ddd; padding: 10px; border-radius: 4px;">
+<label for="billerNamesInput">Biller Names (one per line):</label>
+<textarea id="billerNamesInput" rows="4" style="margin-bottom:10px;"></textarea>
+<label for="volunteerNamesInput">Volunteer Names (one per line):</label>
+<textarea id="volunteerNamesInput" rows="4" style="margin-bottom:10px;"></textarea>
+<button onclick="saveNameLists()" style="background-color: #4CAF50;">Save Names</button>
+</div>
+</div>
+
+<div style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
+<button onclick="toggleServerAddressSection()" style="background-color: #FFC107; padding: 6px 12px; font-size: 14px; width: auto;">Set Server Address</button>
+<button onclick="fetchAndSetLocalIP()" style="background-color: #8BC34A; padding: 6px 12px; font-size: 14px; width: auto;">Use My IP</button>
+<button onclick="detectDeviceHostname()" style="background-color: #9C27B0; padding: 6px 12px; font-size: 14px; width: auto;">Detect Hostname</button>
+<button onclick="testPrint()" style="background-color: #FF5722; padding: 6px 12px; font-size: 14px; width: auto;">Test Print</button>
+<span id="currentServerAddress" style="font-size: 14px; color: #333; background: #f9f9f9; border: 1px solid #ddd; border-radius: 4px; padding: 4px 8px; min-width: 120px; display: inline-block;"></span>
+</div>
+<div id="serverAddressSection" style="display:none; margin-top: 15px; border: 1px solid #ddd; padding: 10px; border-radius: 4px;">
+<label for="serverIpInput">Server Address:</label>
+<input id="serverIpInput" type="text" placeholder="e.g., 192.168.1.100 or my-computer.local" list="serverAddressList"/>
+<datalist id="serverAddressList"></datalist>
+<label for="serverPortInput">Port:</label>
+<input id="serverPortInput" type="number" value="8080"/>
+<button onclick="saveServerAddress()">Save Server Address</button>
+</div>
+
+
+<!-- Footer for Download Report -->
+<div id="footer">
+<div id="footer-content">
+<button onclick="downloadBillerReport()">Download Biller Report & Clear Data</button>
+</div>
+</div>
+
+<script>
+function getStoredNames(key) {
+    return JSON.parse(localStorage.getItem(key) || "[]");
+}
+
+function saveName(key, name) {
+    const names = getStoredNames(key);
+    if (name && !names.includes(name)) {
+        names.push(name);
+        localStorage.setItem(key, JSON.stringify(names));
+    }
+}
+
+function populateDatalist(key, datalistId) {
+    const names = getStoredNames(key);
+    const datalist = document.getElementById(datalistId);
+    datalist.innerHTML = names.map(n => `<option value="${n}">`).join('');
+}
+
+// --- Server Address Suggestion Functions ---
+function getStoredServerAddresses() {
+    return JSON.parse(localStorage.getItem('serverAddresses') || "[]");
+}
+
+function saveServerAddressToList(address) {
+    let addresses = getStoredServerAddresses();
+    if (address && !addresses.includes(address)) {
+        addresses.push(address);
+        localStorage.setItem('serverAddresses', JSON.stringify(addresses));
+    }
+}
+
+function populateServerAddressDatalist() {
+    const addresses = getStoredServerAddresses();
+    const datalist = document.getElementById('serverAddressList');
+    datalist.innerHTML = addresses.map(addr => `<option value="${addr.split(':')[0]}">`).join('');
+}
+
+function updateCurrentServerAddressDisplay() {
+    const savedServerAddress = localStorage.getItem('serverAddress');
+    document.getElementById('currentServerAddress').textContent = savedServerAddress ? savedServerAddress : 'Not set';
+}
+
+// --- Fetch and Set Local IP ---
+function fetchAndSetLocalIP() {
+    let RTCPeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
+    if (!RTCPeerConnection) {
+        alert('WebRTC not supported in this browser.');
+        return;
+    }
+
+    let pc = new RTCPeerConnection({iceServers:[]});
+    pc.createDataChannel("");
+    pc.createOffer().then(offer => pc.setLocalDescription(offer)).catch(e => {});
+
+    pc.onicecandidate = function(ice){
+        if (!ice || !ice.candidate || !ice.candidate.candidate) return;
+        let ipRegex = /([0-9]{1,3}(\.[0-9]{1,3}){3})/;
+        let ipMatch = ipRegex.exec(ice.candidate.candidate);
+        if (ipMatch) {
+            let ip = ipMatch[1];
+            let port = document.getElementById('serverPortInput').value || "8080";
+            let serverAddress = ip + ":" + port;
+            document.getElementById('serverIpInput').value = ip;
+            document.getElementById('serverPortInput').value = port;
+            localStorage.setItem('serverAddress', serverAddress);
+            saveServerAddressToList(serverAddress);
+            populateServerAddressDatalist();
+            updateCurrentServerAddressDisplay();
+            alert('Local IP set as server address: ' + serverAddress);
+            pc.close();
+            pc.onicecandidate = null;
+        }
+    };
+}
+
+// --- Detect Device Hostname ---
+function detectDeviceHostname() {
+    let detectedHostname = null;
+    
+    // Method 1: Try to get hostname from various browser APIs
+    try {
+        // Check if we can get hostname from user agent or other sources
+        const userAgent = navigator.userAgent;
+        const platform = navigator.platform;
+        
+        // Method 2: Try WebRTC to get network info
+        let RTCPeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
+        if (RTCPeerConnection) {
+            let pc = new RTCPeerConnection({iceServers:[]});
+            pc.createDataChannel("");
+            pc.createOffer().then(offer => pc.setLocalDescription(offer)).catch(e => {});
+            
+            pc.onicecandidate = function(ice){
+                if (!ice || !ice.candidate || !ice.candidate.candidate) return;
+                
+                // Look for hostname in ICE candidate
+                let candidate = ice.candidate.candidate;
+                
+                // Extract potential hostname info (but ignore candidate IDs)
+                let parts = candidate.split(' ');
+                
+                for (let part of parts) {
+                    // Skip candidate IDs, IPs, ports, and network metadata
+                    if (part.startsWith('candidate:') || 
+                        part.match(/^\d+$/) || 
+                        part.match(/^\d+\.\d+\.\d+\.\d+$/) || 
+                        part.match(/^[0-9a-fA-F:]+$/) ||
+                        part === 'typ' || part === 'host' || part === 'generation' ||
+                        part === 'ufrag' || part === 'network-cost' ||
+                        part.length < 3) {  // Skip very short strings
+                        continue;
+                    }
+                    
+                    // Look for actual hostnames
+                    if (part.includes('.local') || 
+                        (part.length > 5 && part.includes('.') && !part.match(/^\d/))) {
+                        detectedHostname = part;
+                        break;
+                    }
+                }
+                
+                if (detectedHostname) {
+                    displayDetectedHostname(detectedHostname);
+                } else {
+                    // Fallback: try to construct hostname
+                    tryFallbackHostnameDetection();
+                }
+                
+                pc.close();
+                pc.onicecandidate = null;
+            };
+        } else {
+            tryFallbackHostnameDetection();
+        }
+    } catch (error) {
+        tryFallbackHostnameDetection();
+    }
+}
+
+function tryFallbackHostnameDetection() {
+    // Method 3: Try to detect Android device model as hostname
+    const userAgent = navigator.userAgent;
+    let deviceInfo = '';
+    
+    // Extract device info from user agent
+    if (userAgent.includes('Android')) {
+        // Try to extract device model
+        let androidMatch = userAgent.match(/Android\s+([\d\.]+).*?;\s*(.+?)\s*\)/);
+        if (androidMatch && androidMatch[2]) {
+            deviceInfo = androidMatch[2].replace(/\s+/g, '-').toLowerCase();
+            // Clean up common suffixes
+            deviceInfo = deviceInfo.replace(/(-build.*|-wv)/gi, '');
+        }
+    }
+    
+    // Method 4: Generate a suggested hostname
+    if (!deviceInfo) {
+        deviceInfo = 'android-' + Math.random().toString(36).substr(2, 6);
+    }
+    
+    displayDetectedHostname(deviceInfo, true);
+}
+
+function displayDetectedHostname(hostname, isSuggestion = false) {
+    const message = isSuggestion ? 
+        `Suggested hostname: ${hostname}\n\nThis is a suggested hostname based on your device. You can modify it if needed.` :
+        `Detected hostname: ${hostname}\n\nWould you like to use this as your server address?`;
+    
+    if (confirm(message)) {
+        let defaultPort = document.getElementById('serverPortInput').value || '8080';
+        
+        // Ensure port is valid (1-65535)
+        let portNum = parseInt(defaultPort);
+        if (portNum < 1 || portNum > 65535) {
+            defaultPort = '8080';
+        }
+        
+        const serverAddress = `${hostname}:${defaultPort}`;
+        
+        document.getElementById('serverIpInput').value = hostname;
+        document.getElementById('serverPortInput').value = defaultPort;
+        localStorage.setItem('serverAddress', serverAddress);
+        saveServerAddressToList(serverAddress);
+        populateServerAddressDatalist();
+        updateCurrentServerAddressDisplay();
+        
+        alert(`Hostname set as server address: ${serverAddress}`);
+    }
+}
+
+// -------------------------------------------
+
+window.onload = function() {
+    populateDatalist("billerNames", "billerList");
+    populateDatalist("volunteerNames", "volunteerList");
+    populateServerAddressDatalist();
+    const savedServerAddress = localStorage.getItem('serverAddress');
+    if (savedServerAddress) {
+        const parts = savedServerAddress.split(':');
+        document.getElementById('serverIpInput').value = parts[0] || '';
+        document.getElementById('serverPortInput').value = parts[1] || '8080';
+    }
+    updateCurrentServerAddressDisplay();
+};
+
+function shareReceipt() {
+    const content = document.getElementById('inlinePreviewContent').textContent;
+    if (navigator.share) {
+        navigator.share({
+            title: 'Receipt',
+            text: content
+        }).catch(err => {
+            console.error('Share failed:', err);
+        });
+    } else {
+        alert('Sharing is not supported in this browser');
+    }
+}
+
+function getCurrentTime() {
+    const now = new Date();
+    return now.toLocaleTimeString('en-US', { hour12: false });
+}
+
+function getCurrentDate() {
+    const now = new Date();
+    return now.toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    }).replace(/\//g, '-');
+}
+
+function getBillerData(billerName) {
+    const data = localStorage.getItem(billerName);
+    return data ? JSON.parse(data) : { receipts: [], totalAmount: 0 };
+}
+
+function saveBillerData(billerName, data) {
+    localStorage.setItem(billerName, JSON.stringify(data));
+}
+
+function downloadBillerReport() {
+    const biller = document.getElementById('biller').value;
+    const billerData = getBillerData(biller);
+
+    if (!biller || !billerData.receipts.length) {
+        alert('No receipts found for this biller, or biller name is not entered.');
+        return;
+    }
+
+    let report = `Biller Report: ${biller}\n`;
+    report += '============================\n\n';
+
+    billerData.receipts.forEach((receipt, index) => {
+        report += `Receipt #${receipt.number}\n`;
+        report += '============================\n';
+        report += `Date: ${receipt.date}\n`;
+        report += `Time: ${receipt.time}\n`;
+        report += `Volunteer: ${receipt.volunteer}\n`;
+        report += `Amount: Rs. ${receipt.amount}\n`;
+        report += '============================\n\n';
+    });
+
+    report += `Total Amount: Rs. ${billerData.totalAmount}\n`;
+    report += '============================\n';
+
+    const blob = new Blob([report], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${biller}_report_${getCurrentDate()}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+
+    localStorage.removeItem(biller);
+    alert('Report downloaded and data for "' + biller + '" has been cleared.');
+
+    // Reset the form to a clean state
+    clearFormAndShow();
+    document.getElementById('biller').value = '';
+}
+
+function previewReceipt() {
+    const biller = document.getElementById('biller').value.trim();
+    const volunteer = document.getElementById('volunteer').value.trim();
+    const amount = parseFloat(document.getElementById('amount').value);
+
+    if (!biller || !volunteer || !amount) {
+        alert('Please fill in all fields');
+        return;
+    }
+
+    saveName("billerNames", biller);
+    saveName("volunteerNames", volunteer);
+    populateDatalist("billerNames", "billerList");
+    populateDatalist("volunteerNames", "volunteerList");
+
+    const billerData = getBillerData(biller);
+    const receiptNumber = billerData.receipts.length + 1;
+    const receiptData = {
+        number: receiptNumber,
+        date: getCurrentDate(),
+        time: getCurrentTime(),
+        volunteer: volunteer,
+        amount: amount
+    };
+
+    billerData.receipts.push(receiptData);
+    billerData.totalAmount = (billerData.totalAmount || 0) + amount;
+    saveBillerData(biller, billerData);
+
+    // *** MODIFICATION START ***
+    // The Date and Time lines have been removed from the preview text.
+    const previewText =
+`Receipt No.: ${receiptNumber}
+Biller: ${biller}
+Volunteer: ${volunteer}
+Amount: Rs. ${amount}`;
+    // *** MODIFICATION END ***
+
+    // Populate and show the inline preview
+    document.getElementById('inlinePreviewContent').textContent = previewText;
+    document.getElementById('inlinePreview').style.display = 'block';
+
+    // Update UI state
+    document.getElementById('biller').disabled = true;
+    document.getElementById('volunteer').disabled = true;
+    document.getElementById('amount').disabled = true;
+    document.getElementById('createReceiptBtn').style.display = 'none';
+    document.getElementById('actionButtons').style.display = 'block';
+}
+
+function clearFormAndShow() {
+    // Re-enable input fields
+    document.getElementById('biller').disabled = false;
+    document.getElementById('volunteer').disabled = false;
+    document.getElementById('amount').disabled = false;
+
+    // Clear volunteer and amount for the next receipt
+    document.getElementById('volunteer').value = '';
+    document.getElementById('amount').value = '';
+
+    // Hide the inline preview and action buttons
+    document.getElementById('inlinePreview').style.display = 'none';
+    document.getElementById('actionButtons').style.display = 'none';
+
+    // Show the original "Create Receipt" button
+    document.getElementById('createReceiptBtn').style.display = 'block';
+
+    // Set focus to volunteer field for quick entry
+    document.getElementById('volunteer').focus();
+}
+
+function toggleNameListSection() {
+    const section = document.getElementById('nameListSection');
+    section.style.display = (section.style.display === 'none' || section.style.display === '') ? 'block' : 'none';
+}
+
+function saveNameLists() {
+    const billerInput = document.getElementById('billerNamesInput').value.trim();
+    const volunteerInput = document.getElementById('volunteerNamesInput').value.trim();
+
+    if (billerInput) {
+        billerInput.split('\n').map(n => n.trim()).forEach(name => saveName("billerNames", name));
+    }
+    if (volunteerInput) {
+        volunteerInput.split('\n').map(n => n.trim()).forEach(name => saveName("volunteerNames", name));
+    }
+
+    populateDatalist("billerNames", "billerList");
+    populateDatalist("volunteerNames", "volunteerList");
+
+    alert('Names saved successfully!');
+    document.getElementById('billerNamesInput').value = '';
+    document.getElementById('volunteerNamesInput').value = '';
+    document.getElementById('nameListSection').style.display = 'none';
+}
+
+function toggleServerAddressSection() {
+    const section = document.getElementById('serverAddressSection');
+    section.style.display = (section.style.display === 'none' || section.style.display === '') ? 'block' : 'none';
+}
+
+function saveServerAddress() {
+    const serverIp = document.getElementById('serverIpInput').value.trim();
+    const serverPort = document.getElementById('serverPortInput').value.trim() || '8080';
+    if (serverIp) {
+        const serverAddress = `${serverIp}:${serverPort}`;
+        localStorage.setItem('serverAddress', serverAddress);
+        saveServerAddressToList(serverAddress);
+        populateServerAddressDatalist();
+        alert('Server address saved!');
+        document.getElementById('serverAddressSection').style.display = 'none';
+        updateCurrentServerAddressDisplay();
+    } else {
+        alert('Please enter a server address (IP or hostname).');
+    }
+}
+
+// --- Test Print Function ---
+function testPrint() {
+    const savedServerAddress = localStorage.getItem('serverAddress');
+    if (!savedServerAddress) {
+        alert('Please set a server address first using "Set Server Address" button.');
+        return;
+    }
+
+    if (!confirm('This will fill the form with test data and create a test receipt. Continue?')) {
+        return;
+    }
+
+    // Generate dummy test data
+    const testData = {
+        biller: 'Test Biller',
+        volunteer: 'Test Volunteer',
+        amount: '100.00'
+    };
+
+    // Auto-fill the form fields
+    document.getElementById('biller').value = testData.biller;
+    document.getElementById('volunteer').value = testData.volunteer;
+    document.getElementById('amount').value = testData.amount;
+
+    // Automatically create the receipt
+    previewReceipt();
+
+    // After a short delay, automatically trigger the print
+    setTimeout(() => {
+        if (confirm('Test receipt created! Click OK to send to printer.')) {
+            printToBluetoothPrinter();
+        }
+    }, 500);
+}
+
+function printToBluetoothPrinter() {
+    const savedServerAddress = localStorage.getItem('serverAddress');
+    const localServerIP = savedServerAddress || "127.0.0.1:8080";
+    const previewText = document.getElementById('inlinePreviewContent').textContent.split("\n");
+
+    // *** MODIFICATION START ***
+    // The indices have been updated to match the new, shorter preview text.
+    const receiptNo = previewText[0].split(": ")[1] || '';
+    const biller = previewText[1].split(": ")[1] || '';
+    const volunteer = previewText[2].split(": ")[1] || '';
+    const amount = previewText[3].split(": ")[1].replace("Rs. ", "") || '';
+
+    // We still get the date and time to send to the PHP script, even though they aren't in the preview.
+    const date = getCurrentDate();
+    const time = getCurrentTime();
+    // *** MODIFICATION END ***
+
+    const params = new URLSearchParams({
+        num: receiptNo,
+        date: date,
+        biller: biller,
+        time: time,
+        volunteer: volunteer,
+        amount: amount
+    });
+
+    const responseURL = `http://${localServerIP}/response.php?${params.toString()}`;
+
+    // Detect OS and set the appropriate URL scheme
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    let printURL;
+
+    if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+        // iOS Scheme
+        printURL = `bprint://${responseURL}`;
+    } else {
+        // Android (and other) Scheme
+        printURL = `my.bluetoothprint.scheme://${responseURL}`;
+    }
+
+    window.location.href = printURL;
+}
+</script>
+</body>
+</html>

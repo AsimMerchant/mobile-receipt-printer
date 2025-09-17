@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Settings - Mobile Receipt Printer v11</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            padding-bottom: 100px;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header p {
+            color: #666;
+            margin-bottom: 15px;
+        }
+        
+        .nav-bar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .nav-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+        }
+        
+        .nav-link {
+            padding: 8px 12px;
+            font-size: 12px;
+            text-align: center;
+            text-decoration: none;
+            color: #667eea;
+            border: 1px solid #667eea;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .nav-link.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .section-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .section-card h2 {
+            margin-bottom: 20px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-card h3 {
+            margin-bottom: 15px;
+            margin-top: 25px;
+            color: #555;
+            font-size: 1.1em;
+        }
+        
+        .section-card h3:first-of-type {
+            margin-top: 0;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            background: white;
+        }
+        
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-full {
+            width: 100%;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(45deg, #6c757d, #495057);
+        }
+        
+        .btn-success {
+            background: linear-gradient(45deg, #28a745, #20c997);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(45deg, #dc3545, #c82333);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(45deg, #ffc107, #fd7e14);
+        }
+        
+        .btn-info {
+            background: linear-gradient(45deg, #17a2b8, #6f42c1);
+        }
+        
+        .btn-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .server-status {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .server-status.connected {
+            background: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        
+        .server-status.disconnected {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        
+        .server-status.testing {
+            background: #fff3cd;
+            border-color: #ffeaa7;
+            color: #856404;
+        }
+        
+        .server-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 10px;
+            background: white;
+        }
+        
+        .server-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid #e9ecef;
+            margin-bottom: 5px;
+        }
+        
+        .server-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        .server-item .address {
+            font-family: monospace;
+            font-size: 14px;
+            flex-grow: 1;
+        }
+        
+        .server-item .actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .btn-small {
+            padding: 4px 8px;
+            font-size: 12px;
+            min-width: 60px;
+        }
+        
+        .diagnostics-output {
+            background: #2d3748;
+            color: #e2e8f0;
+            border-radius: 10px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 12px;
+            line-height: 1.4;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            margin: 15px 0;
+            display: none;
+        }
+        
+        .diagnostics-output.show {
+            display: block;
+        }
+        
+        .info-box {
+            background: rgba(23, 162, 184, 0.1);
+            border: 1px solid rgba(23, 162, 184, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #0c5460;
+        }
+        
+        .warning-box {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #856404;
+        }
+        
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: #667eea;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+                padding-bottom: 100px;
+            }
+            
+            .container {
+                max-width: 100%;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .section-card {
+                padding: 20px;
+            }
+            
+            .btn-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-links {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Navigation Bar -->
+        <div class="nav-bar">
+            <div class="nav-links">
+                <a href="MRP-11-main.html" class="nav-link">🏠 Home</a>
+                <a href="MRP-11.html" class="nav-link">📄 Create Receipt</a>
+                <a href="MRP-11-settings.html" class="nav-link active">⚙️ Settings</a>
+                <a href="MRP-10.html" class="nav-link">📊 MRP-10</a>
+                <a href="MRP-9.html" class="nav-link">📋 MRP-9</a>
+            </div>
+        </div>
+
+        <!-- Header -->
+        <div class="header">
+            <h1>⚙️ Server Settings</h1>
+            <p>Configure your Mobile Receipt Printer server connection</p>
+        </div>
+
+        <!-- Current Server Status -->
+        <div class="section-card">
+            <h2><span>📊</span>Current Server Status</h2>
+            <div id="serverStatus" class="server-status">
+                <strong>Status:</strong> <span id="statusText">Checking...</span><br>
+                <strong>Address:</strong> <span id="statusAddress">Not set</span><br>
+                <strong>Last Test:</strong> <span id="statusTime">Never</span>
+            </div>
+            <div class="btn-grid">
+                <button onclick="testConnection()" class="btn btn-info">🧪 Test Connection</button>
+                <button onclick="refreshStatus()" class="btn btn-secondary">🔄 Refresh Status</button>
+            </div>
+        </div>
+
+        <!-- Manual Server Configuration -->
+        <div class="section-card">
+            <h2><span>🔧</span>Server Configuration</h2>
+            
+            <h3>Manual Server Entry</h3>
+            <div class="input-group">
+                <label for="serverIpInput">Server Address:</label>
+                <input id="serverIpInput" type="text" placeholder="e.g., 192.168.1.100 or my-computer.local" list="serverAddressList">
+                <datalist id="serverAddressList"></datalist>
+            </div>
+            
+            <div class="input-group">
+                <label for="serverPortInput">Port:</label>
+                <input id="serverPortInput" type="number" value="8080" min="1" max="65535">
+            </div>
+            
+            <div class="btn-grid">
+                <button onclick="saveServerAddress()" class="btn btn-success">💾 Save Server</button>
+                <button onclick="testCurrentSettings()" class="btn btn-warning">🧪 Test Settings</button>
+            </div>
+        </div>
+
+        <!-- Auto-Detection -->
+        <div class="section-card">
+            <h2><span>🔍</span>Auto-Detection</h2>
+            
+            <div class="info-box">
+                <strong>💡 Tip:</strong> Use these tools to automatically detect your server address without manual entry.
+            </div>
+            
+            <div class="btn-grid">
+                <button onclick="fetchAndSetLocalIP()" class="btn btn-success">🌐 Use My IP</button>
+                <button onclick="detectDeviceHostname()" class="btn btn-info">📱 Detect Hostname</button>
+                <button onclick="scanNetwork()" class="btn btn-warning">🔍 Scan Network</button>
+            </div>
+        </div>
+
+        <!-- Server Management -->
+        <div class="section-card">
+            <h2><span>📚</span>Server Management</h2>
+            
+            <h3>Saved Server Addresses</h3>
+            <div id="serverList" class="server-list">
+                <div style="text-align: center; color: #666; padding: 20px;">
+                    No saved servers yet
+                </div>
+            </div>
+            
+            <div class="btn-grid">
+                <button onclick="refreshServerList()" class="btn btn-secondary">🔄 Refresh List</button>
+                <button onclick="clearAllServers()" class="btn btn-danger">🗑️ Clear All</button>
+                <button onclick="exportSettings()" class="btn btn-info">📤 Export Settings</button>
+                <button onclick="importSettings()" class="btn btn-warning">📥 Import Settings</button>
+            </div>
+        </div>
+
+        <!-- Advanced Settings -->
+        <div class="section-card">
+            <h2><span>🔧</span>Advanced Settings</h2>
+            
+            <h3>Connection Settings</h3>
+            <div class="settings-grid">
+                <div class="input-group">
+                    <label for="timeoutInput">Connection Timeout (seconds):</label>
+                    <input id="timeoutInput" type="number" value="5" min="1" max="30">
+                </div>
+                
+                <div class="input-group">
+                    <label for="retriesInput">Retry Attempts:</label>
+                    <input id="retriesInput" type="number" value="3" min="0" max="10">
+                </div>
+            </div>
+            
+            <h3>Network Preferences</h3>
+            <div class="input-group">
+                <label>
+                    Auto-connect on startup
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="autoConnectToggle">
+                        <span class="slider"></span>
+                    </label>
+                </label>
+            </div>
+            
+            <div class="input-group">
+                <label>
+                    Show connection notifications
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="notificationsToggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </label>
+            </div>
+            
+            <button onclick="saveAdvancedSettings()" class="btn btn-success btn-full">💾 Save Advanced Settings</button>
+        </div>
+
+        <!-- Testing & Diagnostics -->
+        <div class="section-card">
+            <h2><span>🧪</span>Testing & Diagnostics</h2>
+            
+            <div class="btn-grid">
+                <button onclick="runFullDiagnostics()" class="btn btn-info">🔍 Full Diagnostics</button>
+                <button onclick="testAPIEndpoint()" class="btn btn-warning">🔗 Test API</button>
+                <button onclick="showNetworkInfo()" class="btn btn-secondary">📊 Network Info</button>
+                <button onclick="clearDiagnostics()" class="btn btn-danger">🗑️ Clear Log</button>
+            </div>
+            
+            <div id="diagnosticsOutput" class="diagnostics-output"></div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="section-card">
+            <h2><span>⚡</span>Quick Actions</h2>
+            
+            <div class="btn-grid">
+                <button onclick="window.location.href='MRP-11.html'" class="btn btn-success">📄 Create Receipt</button>
+                <button onclick="resetAllSettings()" class="btn btn-danger">🔄 Reset All Settings</button>
+                <button onclick="window.location.href='MRP-11-main.html'" class="btn btn-info">🏠 Back to Home</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden file input for import -->
+    <input type="file" id="importFileInput" accept=".json" style="display: none;" onchange="handleImportFile(event)">
+
+    <script>
+        // ========================================
+        // CORE SETTINGS MANAGEMENT
+        // ========================================
+
+        function getStoredServerAddresses() {
+            return JSON.parse(localStorage.getItem('serverAddresses') || "[]");
+        }
+
+        function saveServerAddressToList(address) {
+            let addresses = getStoredServerAddresses();
+            if (address && !addresses.includes(address)) {
+                addresses.push(address);
+                localStorage.setItem('serverAddresses', JSON.stringify(addresses));
+                refreshServerList();
+            }
+        }
+
+        function removeServerAddressFromList(address) {
+            let addresses = getStoredServerAddresses();
+            addresses = addresses.filter(addr => addr !== address);
+            localStorage.setItem('serverAddresses', JSON.stringify(addresses));
+            refreshServerList();
+        }
+
+        function populateServerAddressDatalist() {
+            const addresses = getStoredServerAddresses();
+            const datalist = document.getElementById('serverAddressList');
+            datalist.innerHTML = addresses.map(addr => `<option value="${addr.split(':')[0]}">`).join('');
+        }
+
+        // ========================================
+        // SERVER STATUS FUNCTIONS
+        // ========================================
+
+        function updateServerStatus(status = 'checking', address = null, additionalInfo = '') {
+            const statusElement = document.getElementById('serverStatus');
+            const statusText = document.getElementById('statusText');
+            const statusAddress = document.getElementById('statusAddress');
+            const statusTime = document.getElementById('statusTime');
+            
+            const currentTime = new Date().toLocaleTimeString();
+            const currentAddress = address || localStorage.getItem('serverAddress') || 'Not set';
+            
+            statusAddress.textContent = currentAddress;
+            statusTime.textContent = currentTime;
+            
+            // Remove all status classes
+            statusElement.className = 'server-status';
+            
+            switch(status) {
+                case 'connected':
+                    statusElement.classList.add('connected');
+                    statusText.textContent = '✅ Connected - Server responding';
+                    break;
+                case 'disconnected':
+                    statusElement.classList.add('disconnected');
+                    statusText.textContent = '❌ Disconnected - Server not responding';
+                    break;
+                case 'testing':
+                    statusElement.classList.add('testing');
+                    statusText.textContent = '⏳ Testing connection...';
+                    break;
+                case 'error':
+                    statusElement.classList.add('disconnected');
+                    statusText.textContent = `❌ Error: ${additionalInfo}`;
+                    break;
+                default:
+                    statusText.textContent = '🔍 Checking server status...';
+            }
+        }
+
+        function refreshStatus() {
+            const serverAddress = localStorage.getItem('serverAddress');
+            if (!serverAddress) {
+                updateServerStatus('disconnected', null, 'No server configured');
+                return;
+            }
+            
+            updateServerStatus('testing', serverAddress);
+            testServerConnection(serverAddress, true);
+        }
+
+        function testServerConnection(serverAddress, updateStatus = false) {
+            return fetch(`http://${serverAddress}/response.php`, { 
+                method: 'HEAD',
+                signal: AbortSignal.timeout(5000)
+            })
+            .then(response => {
+                if (response.ok) {
+                    if (updateStatus) updateServerStatus('connected', serverAddress);
+                    return true;
+                } else {
+                    if (updateStatus) updateServerStatus('error', serverAddress, `HTTP ${response.status}`);
+                    return false;
+                }
+            })
+            .catch(error => {
+                if (updateStatus) updateServerStatus('disconnected', serverAddress, error.message);
+                return false;
+            });
+        }
+
+        // ========================================
+        // MANUAL SERVER CONFIGURATION
+        // ========================================
+
+        function saveServerAddress() {
+            const serverIp = document.getElementById('serverIpInput').value.trim();
+            const serverPort = document.getElementById('serverPortInput').value.trim() || '8080';
+            
+            if (!serverIp) {
+                alert('Please enter a server address (IP or hostname).');
+                return;
+            }
+            
+            const serverAddress = `${serverIp}:${serverPort}`;
+            
+            // Test connection first
+            updateServerStatus('testing', serverAddress);
+            logToDiagnostics(`Testing connection to ${serverAddress}...`);
+            
+            testServerConnection(serverAddress).then(success => {
+                if (success) {
+                    localStorage.setItem('serverAddress', serverAddress);
+                    saveServerAddressToList(serverAddress);
+                    populateServerAddressDatalist();
+                    updateServerStatus('connected', serverAddress);
+                    logToDiagnostics(`✅ Server saved and connected: ${serverAddress}`);
+                    
+                    if (getNotificationSetting()) {
+                        alert(`Server address saved and tested successfully!\n\n${serverAddress}`);
+                    }
+                } else {
+                    updateServerStatus('disconnected', serverAddress);
+                    logToDiagnostics(`❌ Connection test failed for: ${serverAddress}`);
+                    
+                    if (confirm(`Connection test failed for ${serverAddress}.\n\nSave anyway?`)) {
+                        localStorage.setItem('serverAddress', serverAddress);
+                        saveServerAddressToList(serverAddress);
+                        populateServerAddressDatalist();
+                        logToDiagnostics(`⚠️ Server saved without connection verification: ${serverAddress}`);
+                    }
+                }
+            });
+        }
+
+        function testCurrentSettings() {
+            const serverIp = document.getElementById('serverIpInput').value.trim();
+            const serverPort = document.getElementById('serverPortInput').value.trim() || '8080';
+            
+            if (!serverIp) {
+                alert('Please enter a server address first.');
+                return;
+            }
+            
+            const serverAddress = `${serverIp}:${serverPort}`;
+            updateServerStatus('testing', serverAddress);
+            logToDiagnostics(`Testing ${serverAddress}...`);
+            
+            testServerConnection(serverAddress).then(success => {
+                if (success) {
+                    updateServerStatus('connected', serverAddress);
+                    logToDiagnostics(`✅ Connection successful: ${serverAddress}`);
+                    alert('✅ Connection test successful!');
+                } else {
+                    updateServerStatus('disconnected', serverAddress);
+                    logToDiagnostics(`❌ Connection failed: ${serverAddress}`);
+                    alert('❌ Connection test failed. Check server address and ensure server is running.');
+                }
+            });
+        }
+
+        function testConnection() {
+            const serverAddress = localStorage.getItem('serverAddress');
+            if (!serverAddress) {
+                alert('No server configured. Please set up a server address first.');
+                return;
+            }
+            
+            updateServerStatus('testing', serverAddress);
+            logToDiagnostics(`Testing configured server: ${serverAddress}...`);
+            
+            testServerConnection(serverAddress).then(success => {
+                if (success) {
+                    updateServerStatus('connected', serverAddress);
+                    logToDiagnostics(`✅ Server is online and responding`);
+                    alert('✅ Server is online and responding properly!');
+                } else {
+                    updateServerStatus('disconnected', serverAddress);
+                    logToDiagnostics(`❌ Server is not responding`);
+                    alert('❌ Server is not responding. Check if the server is running and accessible.');
+                }
+            });
+        }
+
+        // ========================================
+        // AUTO-DETECTION FUNCTIONS
+        // ========================================
+
+        function fetchAndSetLocalIP() {
+            logToDiagnostics('🔍 Starting IP auto-detection...');
+            
+            let RTCPeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
+            if (!RTCPeerConnection) {
+                alert('WebRTC not supported in this browser.');
+                logToDiagnostics('❌ WebRTC not supported');
+                return;
+            }
+
+            let pc = new RTCPeerConnection({iceServers:[]});
+            pc.createDataChannel("");
+            pc.createOffer().then(offer => pc.setLocalDescription(offer)).catch(e => {
+                logToDiagnostics(`❌ WebRTC error: ${e.message}`);
+            });
+
+            pc.onicecandidate = function(ice){
+                if (!ice || !ice.candidate || !ice.candidate.candidate) return;
+                let ipRegex = /([0-9]{1,3}(\.[0-9]{1,3}){3})/;
+                let ipMatch = ipRegex.exec(ice.candidate.candidate);
+                if (ipMatch) {
+                    let ip = ipMatch[1];
+                    let port = document.getElementById('serverPortInput').value || "8080";
+                    
+                    document.getElementById('serverIpInput').value = ip;
+                    document.getElementById('serverPortInput').value = port;
+                    
+                    logToDiagnostics(`✅ Auto-detected IP: ${ip}`);
+                    alert(`Local IP auto-detected: ${ip}\n\nClick "Save Server" to test and save this configuration.`);
+                    
+                    pc.close();
+                    pc.onicecandidate = null;
+                }
+            };
+        }
+
+        function detectDeviceHostname() {
+            logToDiagnostics('🔍 Starting hostname detection...');
+            
+            let detectedHostname = null;
+            
+            try {
+                let RTCPeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
+                if (RTCPeerConnection) {
+                    let pc = new RTCPeerConnection({iceServers:[]});
+                    pc.createDataChannel("");
+                    pc.createOffer().then(offer => pc.setLocalDescription(offer)).catch(e => {});
+                    
+                    pc.onicecandidate = function(ice){
+                        if (!ice || !ice.candidate || !ice.candidate.candidate) return;
+                        
+                        let candidate = ice.candidate.candidate;
+                        let parts = candidate.split(' ');
+                        
+                        for (let part of parts) {
+                            if (part.startsWith('candidate:') || 
+                                part.match(/^\d+$/) || 
+                                part.match(/^\d+\.\d+\.\d+\.\d+$/) || 
+                                part.match(/^[0-9a-fA-F:]+$/) ||
+                                part === 'typ' || part === 'host' || part === 'generation' ||
+                                part === 'ufrag' || part === 'network-cost' ||
+                                part.length < 3) {
+                                continue;
+                            }
+                            
+                            if (part.includes('.local') || 
+                                (part.length > 5 && part.includes('.') && !part.match(/^\d/))) {
+                                detectedHostname = part;
+                                break;
+                            }
+                        }
+                        
+                        if (detectedHostname) {
+                            displayDetectedHostname(detectedHostname);
+                            logToDiagnostics(`✅ Hostname detected: ${detectedHostname}`);
+                        } else {
+                            tryFallbackHostnameDetection();
+                        }
+                        
+                        pc.close();
+                        pc.onicecandidate = null;
+                    };
+                } else {
+                    tryFallbackHostnameDetection();
+                }
+            } catch (error) {
+                logToDiagnostics(`❌ Hostname detection error: ${error.message}`);
+                tryFallbackHostnameDetection();
+            }
+        }
+
+        function tryFallbackHostnameDetection() {
+            const userAgent = navigator.userAgent;
+            let deviceInfo = '';
+            
+            if (userAgent.includes('Android')) {
+                let androidMatch = userAgent.match(/Android\s+([\d\.]+).*?;\s*(.+?)\s*\)/);
+                if (androidMatch && androidMatch[2]) {
+                    deviceInfo = androidMatch[2].replace(/\s+/g, '-').toLowerCase();
+                    deviceInfo = deviceInfo.replace(/(-build.*|-wv)/gi, '');
+                }
+            }
+            
+            if (!deviceInfo) {
+                deviceInfo = 'android-' + Math.random().toString(36).substr(2, 6);
+            }
+            
+            logToDiagnostics(`ℹ️ Generated hostname suggestion: ${deviceInfo}`);
+            displayDetectedHostname(deviceInfo, true);
+        }
+
+        function displayDetectedHostname(hostname, isSuggestion = false) {
+            const message = isSuggestion ? 
+                `Suggested hostname: ${hostname}\n\nThis is a suggested hostname based on your device. You can modify it if needed.` :
+                `Detected hostname: ${hostname}\n\nWould you like to use this as your server address?`;
+            
+            if (confirm(message)) {
+                let defaultPort = document.getElementById('serverPortInput').value || '8080';
+                document.getElementById('serverIpInput').value = hostname;
+                document.getElementById('serverPortInput').value = defaultPort;
+                logToDiagnostics(`✅ Hostname set: ${hostname}:${defaultPort}`);
+            }
+        }
+
+        function scanNetwork() {
+            logToDiagnostics('🔍 Starting network scan...');
+            logToDiagnostics('ℹ️ This is a simulated scan - actual network scanning requires more advanced techniques');
+            
+            // Get current IP to determine network range
+            fetchAndSetLocalIP();
+            
+            // Simulate network scan results
+            setTimeout(() => {
+                const commonPorts = ['8080', '80', '3000', '8000'];
+                const commonIPs = ['192.168.1.1', '192.168.0.1', '10.0.0.1'];
+                
+                logToDiagnostics('📡 Common server locations to try:');
+                commonIPs.forEach(ip => {
+                    commonPorts.forEach(port => {
+                        logToDiagnostics(`   • ${ip}:${port}`);
+                    });
+                });
+                
+                logToDiagnostics('ℹ️ Manually test these addresses or use "Use My IP" for local server');
+            }, 1000);
+        }
+
+        // ========================================
+        // SERVER LIST MANAGEMENT
+        // ========================================
+
+        function refreshServerList() {
+            const servers = getStoredServerAddresses();
+            const listElement = document.getElementById('serverList');
+            
+            if (servers.length === 0) {
+                listElement.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">No saved servers yet</div>';
+                return;
+            }
+            
+            listElement.innerHTML = servers.map(server => `
+                <div class="server-item">
+                    <div class="address">${server}</div>
+                    <div class="actions">
+                        <button onclick="setAsDefault('${server}')" class="btn btn-success btn-small">Set Default</button>
+                        <button onclick="testServer('${server}')" class="btn btn-info btn-small">Test</button>
+                        <button onclick="deleteServer('${server}')" class="btn btn-danger btn-small">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function setAsDefault(server) {
+            localStorage.setItem('serverAddress', server);
+            updateServerStatus('testing', server);
+            logToDiagnostics(`📌 Set as default: ${server}`);
+            
+            testServerConnection(server).then(success => {
+                if (success) {
+                    updateServerStatus('connected', server);
+                    logToDiagnostics(`✅ Default server is online: ${server}`);
+                } else {
+                    updateServerStatus('disconnected', server);
+                    logToDiagnostics(`⚠️ Default server set but not responding: ${server}`);
+                }
+            });
+            
+            if (getNotificationSetting()) {
+                alert(`Default server set to: ${server}`);
+            }
+        }
+
+        function testServer(server) {
+            updateServerStatus('testing', server);
+            logToDiagnostics(`🧪 Testing server: ${server}`);
+            
+            testServerConnection(server).then(success => {
+                if (success) {
+                    updateServerStatus('connected', server);
+                    logToDiagnostics(`✅ Server test passed: ${server}`);
+                    alert(`✅ Server is responding: ${server}`);
+                } else {
+                    updateServerStatus('disconnected', server);
+                    logToDiagnostics(`❌ Server test failed: ${server}`);
+                    alert(`❌ Server not responding: ${server}`);
+                }
+            });
+        }
+
+        function deleteServer(server) {
+            if (confirm(`Delete server: ${server}?`)) {
+                removeServerAddressFromList(server);
+                logToDiagnostics(`🗑️ Deleted server: ${server}`);
+                
+                // If this was the default server, clear it
+                if (localStorage.getItem('serverAddress') === server) {
+                    localStorage.removeItem('serverAddress');
+                    updateServerStatus('disconnected', null, 'Default server deleted');
+                    logToDiagnostics(`⚠️ Default server was deleted`);
+                }
+            }
+        }
+
+        function clearAllServers() {
+            if (confirm('Delete all saved servers? This cannot be undone.')) {
+                localStorage.removeItem('serverAddresses');
+                localStorage.removeItem('serverAddress');
+                refreshServerList();
+                updateServerStatus('disconnected', null, 'All servers cleared');
+                logToDiagnostics(`🗑️ All servers cleared`);
+                alert('All servers have been deleted.');
+            }
+        }
+
+        // ========================================
+        // ADVANCED SETTINGS
+        // ========================================
+
+        function saveAdvancedSettings() {
+            const settings = {
+                timeout: document.getElementById('timeoutInput').value,
+                retries: document.getElementById('retriesInput').value,
+                autoConnect: document.getElementById('autoConnectToggle').checked,
+                notifications: document.getElementById('notificationsToggle').checked
+            };
+            
+            localStorage.setItem('advancedSettings', JSON.stringify(settings));
+            logToDiagnostics(`💾 Advanced settings saved`);
+            alert('Advanced settings saved successfully!');
+        }
+
+        function loadAdvancedSettings() {
+            const settings = JSON.parse(localStorage.getItem('advancedSettings') || '{}');
+            
+            document.getElementById('timeoutInput').value = settings.timeout || 5;
+            document.getElementById('retriesInput').value = settings.retries || 3;
+            document.getElementById('autoConnectToggle').checked = settings.autoConnect || false;
+            document.getElementById('notificationsToggle').checked = settings.notifications !== false; // Default true
+        }
+
+        function getNotificationSetting() {
+            const settings = JSON.parse(localStorage.getItem('advancedSettings') || '{}');
+            return settings.notifications !== false; // Default true
+        }
+
+        // ========================================
+        // DIAGNOSTICS FUNCTIONS
+        // ========================================
+
+        function logToDiagnostics(message) {
+            const output = document.getElementById('diagnosticsOutput');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}\n`;
+            
+            output.textContent += logEntry;
+            output.classList.add('show');
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function clearDiagnostics() {
+            document.getElementById('diagnosticsOutput').textContent = '';
+            document.getElementById('diagnosticsOutput').classList.remove('show');
+        }
+
+        function runFullDiagnostics() {
+            clearDiagnostics();
+            logToDiagnostics('🔍 Starting full system diagnostics...');
+            logToDiagnostics('');
+            
+            // System info
+            logToDiagnostics('📱 SYSTEM INFORMATION:');
+            logToDiagnostics(`   Browser: ${navigator.userAgent.substring(0, 50)}...`);
+            logToDiagnostics(`   Platform: ${navigator.platform}`);
+            logToDiagnostics(`   Language: ${navigator.language}`);
+            logToDiagnostics(`   Online: ${navigator.onLine ? 'Yes' : 'No'}`);
+            logToDiagnostics(`   Screen: ${window.screen.width}x${window.screen.height}`);
+            logToDiagnostics(`   Viewport: ${window.innerWidth}x${window.innerHeight}`);
+            logToDiagnostics('');
+            
+            // Current settings
+            logToDiagnostics('⚙️ CURRENT SETTINGS:');
+            const serverAddress = localStorage.getItem('serverAddress');
+            logToDiagnostics(`   Default Server: ${serverAddress || 'Not set'}`);
+            
+            const servers = getStoredServerAddresses();
+            logToDiagnostics(`   Saved Servers: ${servers.length}`);
+            servers.forEach(server => {
+                logToDiagnostics(`      • ${server}`);
+            });
+            
+            const advancedSettings = JSON.parse(localStorage.getItem('advancedSettings') || '{}');
+            logToDiagnostics(`   Timeout: ${advancedSettings.timeout || 5}s`);
+            logToDiagnostics(`   Retries: ${advancedSettings.retries || 3}`);
+            logToDiagnostics(`   Auto-connect: ${advancedSettings.autoConnect ? 'Enabled' : 'Disabled'}`);
+            logToDiagnostics(`   Notifications: ${advancedSettings.notifications !== false ? 'Enabled' : 'Disabled'}`);
+            logToDiagnostics('');
+            
+            // Connection test
+            if (serverAddress) {
+                logToDiagnostics('🧪 CONNECTION TEST:');
+                logToDiagnostics(`   Testing: ${serverAddress}`);
+                
+                testServerConnection(serverAddress).then(success => {
+                    if (success) {
+                        logToDiagnostics(`   ✅ Connection successful`);
+                        logToDiagnostics(`   📡 Server is responding properly`);
+                    } else {
+                        logToDiagnostics(`   ❌ Connection failed`);
+                        logToDiagnostics(`   ⚠️ Server may be offline or unreachable`);
+                    }
+                    logToDiagnostics('');
+                    logToDiagnostics('🔍 Diagnostics complete');
+                });
+            } else {
+                logToDiagnostics('🧪 CONNECTION TEST:');
+                logToDiagnostics('   ⚠️ No server configured for testing');
+                logToDiagnostics('');
+                logToDiagnostics('🔍 Diagnostics complete');
+            }
+        }
+
+        function testAPIEndpoint() {
+            const serverAddress = localStorage.getItem('serverAddress');
+            if (!serverAddress) {
+                alert('No server configured. Please set up a server address first.');
+                return;
+            }
+            
+            logToDiagnostics(`🔗 Testing API endpoint: ${serverAddress}/response.php`);
+            
+            // Test with sample receipt data
+            const testParams = new URLSearchParams({
+                num: '999',
+                date: new Date().toLocaleDateString(),
+                biller: 'Test Biller',
+                time: new Date().toLocaleTimeString(),
+                volunteer: 'Test Volunteer',
+                amount: '100.00'
+            });
+            
+            const apiUrl = `http://${serverAddress}/response.php?${testParams.toString()}`;
+            
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    logToDiagnostics(`✅ API test successful`);
+                    logToDiagnostics(`📋 Response contains ${Object.keys(data).length} receipt lines`);
+                    logToDiagnostics(`🎯 API is working properly`);
+                    alert('✅ API endpoint is working correctly!');
+                })
+                .catch(error => {
+                    logToDiagnostics(`❌ API test failed: ${error.message}`);
+                    alert('❌ API endpoint test failed. Check server and response.php file.');
+                });
+        }
+
+        function showNetworkInfo() {
+            logToDiagnostics('🌐 NETWORK INFORMATION:');
+            logToDiagnostics(`   Current URL: ${window.location.href}`);
+            logToDiagnostics(`   Protocol: ${window.location.protocol}`);
+            logToDiagnostics(`   Hostname: ${window.location.hostname}`);
+            logToDiagnostics(`   Port: ${window.location.port || '80'}`);
+            logToDiagnostics(`   Connection: ${navigator.connection ? navigator.connection.effectiveType : 'Unknown'}`);
+            logToDiagnostics('');
+            
+            // Try to get more network info
+            if (navigator.connection) {
+                const conn = navigator.connection;
+                logToDiagnostics('📶 CONNECTION DETAILS:');
+                logToDiagnostics(`   Type: ${conn.effectiveType || 'Unknown'}`);
+                logToDiagnostics(`   Downlink: ${conn.downlink || 'Unknown'} Mbps`);
+                logToDiagnostics(`   RTT: ${conn.rtt || 'Unknown'} ms`);
+                logToDiagnostics(`   Save Data: ${conn.saveData ? 'Enabled' : 'Disabled'}`);
+            }
+        }
+
+        // ========================================
+        // IMPORT/EXPORT FUNCTIONS
+        // ========================================
+
+        function exportSettings() {
+            const settings = {
+                serverAddress: localStorage.getItem('serverAddress'),
+                serverAddresses: getStoredServerAddresses(),
+                advancedSettings: JSON.parse(localStorage.getItem('advancedSettings') || '{}'),
+                exportDate: new Date().toISOString(),
+                version: 'MRP-11'
+            };
+            
+            const blob = new Blob([JSON.stringify(settings, null, 2)], { type: 'application/json' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `mrp11-settings-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            
+            logToDiagnostics('📤 Settings exported successfully');
+            alert('Settings exported successfully!');
+        }
+
+        function importSettings() {
+            document.getElementById('importFileInput').click();
+        }
+
+        function handleImportFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const settings = JSON.parse(e.target.result);
+                    
+                    if (settings.version !== 'MRP-11') {
+                        if (!confirm('This settings file may be from a different version. Import anyway?')) {
+                            return;
+                        }
+                    }
+                    
+                    // Import settings
+                    if (settings.serverAddress) {
+                        localStorage.setItem('serverAddress', settings.serverAddress);
+                    }
+                    
+                    if (settings.serverAddresses) {
+                        localStorage.setItem('serverAddresses', JSON.stringify(settings.serverAddresses));
+                    }
+                    
+                    if (settings.advancedSettings) {
+                        localStorage.setItem('advancedSettings', JSON.stringify(settings.advancedSettings));
+                    }
+                    
+                    // Refresh UI
+                    loadAdvancedSettings();
+                    refreshServerList();
+                    populateServerAddressDatalist();
+                    refreshStatus();
+                    
+                    logToDiagnostics('📥 Settings imported successfully');
+                    alert(`Settings imported successfully!\n\nImported from: ${settings.exportDate ? new Date(settings.exportDate).toLocaleDateString() : 'Unknown date'}`);
+                    
+                } catch (error) {
+                    logToDiagnostics(`❌ Import failed: ${error.message}`);
+                    alert('Import failed. Please check the file format.');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // ========================================
+        // RESET FUNCTIONS
+        // ========================================
+
+        function resetAllSettings() {
+            if (!confirm('Reset all settings? This will delete all server configurations and preferences. This cannot be undone.')) {
+                return;
+            }
+            
+            if (!confirm('Are you absolutely sure? This will clear everything.')) {
+                return;
+            }
+            
+            // Clear all localStorage data related to MRP
+            localStorage.removeItem('serverAddress');
+            localStorage.removeItem('serverAddresses');
+            localStorage.removeItem('advancedSettings');
+            
+            // Refresh UI
+            loadAdvancedSettings();
+            refreshServerList();
+            populateServerAddressDatalist();
+            updateServerStatus('disconnected', null, 'Settings reset');
+            clearDiagnostics();
+            
+            // Clear form
+            document.getElementById('serverIpInput').value = '';
+            document.getElementById('serverPortInput').value = '8080';
+            
+            logToDiagnostics('🔄 All settings have been reset');
+            alert('All settings have been reset to defaults.');
+        }
+
+        // ========================================
+        // INITIALIZATION
+        // ========================================
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load saved settings
+            loadAdvancedSettings();
+            refreshServerList();
+            populateServerAddressDatalist();
+            
+            // Set current server in form
+            const serverAddress = localStorage.getItem('serverAddress');
+            if (serverAddress) {
+                const [ip, port] = serverAddress.split(':');
+                document.getElementById('serverIpInput').value = ip;
+                document.getElementById('serverPortInput').value = port || '8080';
+            }
+            
+            // Check initial server status
+            setTimeout(refreshStatus, 1000);
+            
+            logToDiagnostics('⚙️ Settings page loaded');
+        });
+    </script>
+</body>
+</html>
