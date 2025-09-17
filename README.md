@@ -41,50 +41,36 @@ The MRP-11 system features a **clean, mobile-first interface** with **separation
 - ✅ **Connection Testing** - Comprehensive server and network diagnostics
 - ✅ **Settings Management** - Import/export configuration for backup
 
-## � **Quick Download**
+## 📥 **Quick Download**
 
-Get all HTML files instantly with one click:
+Get all files for your Mobile Receipt Printer system:
 
 <div align="center">
 
-**📱 Download All HTML Files**
+### **Download Options**
 
-<a href="javascript:(function(){
-const files = [
-  'https://raw.githubusercontent.com/AsimMerchant/mobile-receipt-printer/master/MRP-11.html',
-  'https://raw.githubusercontent.com/AsimMerchant/mobile-receipt-printer/master/MRP-11-main.html', 
-  'https://raw.githubusercontent.com/AsimMerchant/mobile-receipt-printer/master/MRP-11-settings.html',
-  'https://raw.githubusercontent.com/AsimMerchant/mobile-receipt-printer/master/MRP-10.html',
-  'https://raw.githubusercontent.com/AsimMerchant/mobile-receipt-printer/master/MRP-9.html',
-  'https://raw.githubusercontent.com/AsimMerchant/mobile-receipt-printer/master/response.php'
-];
-files.forEach((url, i) => {
-  setTimeout(() => {
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = url.split('/').pop();
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  }, i * 500);
-});
-})()">
-<img src="https://img.shields.io/badge/📥_Download_All_Files-4CAF50?style=for-the-badge&logo=download&logoColor=white" alt="Download All Files"/>
+**📦 Complete Repository (Recommended)**
+
+<a href="https://github.com/AsimMerchant/mobile-receipt-printer/archive/refs/heads/master.zip">
+<img src="https://img.shields.io/badge/Download_ZIP-Complete_Project-4CAF50?style=for-the-badge&logo=download&logoColor=white" alt="Download Complete Project"/>
 </a>
 
-*Click to download: MRP-11.html, MRP-11-main.html, MRP-11-settings.html, MRP-10.html, MRP-9.html, response.php*
+**📱 Individual Files** *(Right-click → Save link as...)*
 
-**Or download individual files:**
-- 📱 [MRP-11.html](https://raw.githubusercontent.com/AsimMerchant/mobile-receipt-printer/master/MRP-11.html) (Main Interface)
-- 🏠 [MRP-11-main.html](https://raw.githubusercontent.com/AsimMerchant/mobile-receipt-printer/master/MRP-11-main.html) (Landing Page)  
-- ⚙️ [MRP-11-settings.html](https://raw.githubusercontent.com/AsimMerchant/mobile-receipt-printer/master/MRP-11-settings.html) (Settings)
-- 📊 [MRP-10.html](https://raw.githubusercontent.com/AsimMerchant/mobile-receipt-printer/master/MRP-10.html) (Legacy)
-- 📋 [MRP-9.html](https://raw.githubusercontent.com/AsimMerchant/mobile-receipt-printer/master/MRP-9.html) (Original)
-- 🔧 [response.php](https://raw.githubusercontent.com/AsimMerchant/mobile-receipt-printer/master/response.php) (API Backend)
+| File | Purpose | Download Link |
+|------|---------|---------------|
+| 📱 **MRP-11.html** | Main Receipt Interface | [Download](https://raw.githubusercontent.com/AsimMerchant/mobile-receipt-printer/master/MRP-11.html) |
+| 🏠 **MRP-11-main.html** | Landing Page & Setup Guide | [Download](https://raw.githubusercontent.com/AsimMerchant/mobile-receipt-printer/master/MRP-11-main.html) |
+| ⚙️ **MRP-11-settings.html** | Advanced Configuration | [Download](https://raw.githubusercontent.com/AsimMerchant/mobile-receipt-printer/master/MRP-11-settings.html) |
+| 🔧 **response.php** | Server API Backend | [Download](https://raw.githubusercontent.com/AsimMerchant/mobile-receipt-printer/master/response.php) |
+| 📊 **MRP-10.html** | Legacy Version 10 | [Download](https://raw.githubusercontent.com/AsimMerchant/mobile-receipt-printer/master/MRP-10.html) |
+| 📋 **MRP-9.html** | Original Version | [Download](https://raw.githubusercontent.com/AsimMerchant/mobile-receipt-printer/master/MRP-9.html) |
+
+> **💡 Download Tip:** Right-click any download link above and select "Save link as..." to download the file directly to your device.
 
 </div>
 
-## �🛠 **Technical Stack**
+## 🛠 **Technical Stack**
 
 - **Frontend:** HTML5, CSS3 (Glass-morphism design), Vanilla JavaScript
 - **Backend:** PHP (response.php API endpoint)
