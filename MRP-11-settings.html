@@ -382,9 +382,100 @@
                 grid-template-columns: repeat(2, 1fr);
             }
         }
+        
+        /* Fullscreen Mode Styles */
+        .fullscreen-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(102, 126, 234, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .fullscreen-btn:hover {
+            background: rgba(102, 126, 234, 1);
+            transform: scale(1.1);
+        }
+        
+        .fullscreen-notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            font-size: 16px;
+            z-index: 2000;
+            display: none;
+        }
+        
+        body.fullscreen-active {
+            padding: 10px;
+        }
+        
+        body.fullscreen-active .container {
+            max-width: none;
+            width: 100%;
+        }
+        
+        /* QR Code Styles */
+        .qr-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .qr-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .qr-code {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            display: inline-block;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .qr-url {
+            background: #f8f9ff;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 14px;
+            word-break: break-all;
+            margin: 10px 0;
+            border: 1px solid #e0e0e0;
+        }
     </style>
 </head>
 <body>
+    <!-- Fullscreen Button -->
+    <button class="fullscreen-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">
+        ⛶
+    </button>
+    
+    <!-- Fullscreen Notification -->
+    <div class="fullscreen-notification" id="fullscreenNotification">
+        Press F11 or use browser fullscreen to prevent accidental exit
+    </div>
+    
     <div class="container">
         <!-- Navigation Bar -->
         <div class="nav-bar">
@@ -414,6 +505,25 @@
             <div class="btn-grid">
                 <button onclick="testConnection()" class="btn btn-info">🧪 Test Connection</button>
                 <button onclick="refreshStatus()" class="btn btn-secondary">🔄 Refresh Status</button>
+            </div>
+        </div>
+
+        <!-- QR Code Generator -->
+        <div class="qr-section">
+            <h2><span>📱</span>QR Code Generator</h2>
+            <p>Generate QR codes for easy access to your Mobile Receipt Printer</p>
+            
+            <div class="btn-grid">
+                <button onclick="generateQRCode('main')" class="btn btn-primary">🏠 Main Page QR</button>
+                <button onclick="generateQRCode('receipt')" class="btn btn-secondary">📄 Receipt Page QR</button>
+                <button onclick="generateQRCode('settings')" class="btn btn-info">⚙️ Settings Page QR</button>
+            </div>
+            
+            <div class="qr-container" id="qrContainer" style="display: none;">
+                <h3 id="qrTitle">QR Code</h3>
+                <div class="qr-url" id="qrUrl"></div>
+                <div class="qr-code" id="qrCodeDisplay"></div>
+                <p><small>Scan this QR code to access the page on any device</small></p>
             </div>
         </div>
 
@@ -544,6 +654,165 @@
     <input type="file" id="importFileInput" accept=".json" style="display: none;" onchange="handleImportFile(event)">
 
     <script>
+        // ========================================
+        // FULLSCREEN FUNCTIONALITY
+        // ========================================
+        
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                enterFullscreen();
+            } else {
+                exitFullscreen();
+            }
+        }
+        
+        function enterFullscreen() {
+            const docElement = document.documentElement;
+            
+            if (docElement.requestFullscreen) {
+                docElement.requestFullscreen().then(() => {
+                    document.body.classList.add('fullscreen-active');
+                    showFullscreenNotification();
+                });
+            } else if (docElement.webkitRequestFullscreen) {
+                docElement.webkitRequestFullscreen();
+                document.body.classList.add('fullscreen-active');
+                showFullscreenNotification();
+            } else if (docElement.msRequestFullscreen) {
+                docElement.msRequestFullscreen();
+                document.body.classList.add('fullscreen-active');
+                showFullscreenNotification();
+            } else {
+                // Fallback for browsers that don't support fullscreen API
+                showFullscreenNotification();
+            }
+        }
+        
+        function exitFullscreen() {
+            if (document.exitFullscreen) {
+                document.exitFullscreen().then(() => {
+                    document.body.classList.remove('fullscreen-active');
+                });
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+                document.body.classList.remove('fullscreen-active');
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+                document.body.classList.remove('fullscreen-active');
+            }
+        }
+        
+        function showFullscreenNotification() {
+            const notification = document.getElementById('fullscreenNotification');
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+        
+        // Handle fullscreen change events
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement) {
+                document.body.classList.remove('fullscreen-active');
+            }
+        });
+        
+        document.addEventListener('webkitfullscreenchange', () => {
+            if (!document.webkitFullscreenElement) {
+                document.body.classList.remove('fullscreen-active');
+            }
+        });
+        
+        // ========================================
+        // QR CODE FUNCTIONALITY
+        // ========================================
+        
+        function generateQRCode(pageType) {
+            // Get the current IP address
+            getCurrentIP().then(ip => {
+                if (!ip) {
+                    alert('Unable to detect IP address. Please ensure you are connected to a network.');
+                    return;
+                }
+                
+                let url, title;
+                const baseUrl = `http://${ip}:8080`;
+                
+                switch(pageType) {
+                    case 'main':
+                        url = `${baseUrl}/MRP-11-main.html`;
+                        title = 'Main Page QR Code';
+                        break;
+                    case 'receipt':
+                        url = `${baseUrl}/MRP-11.html`;
+                        title = 'Receipt Creation QR Code';
+                        break;
+                    case 'settings':
+                        url = `${baseUrl}/MRP-11-settings.html`;
+                        title = 'Settings Page QR Code';
+                        break;
+                    default:
+                        url = `${baseUrl}/MRP-11-main.html`;
+                        title = 'Main Page QR Code';
+                }
+                
+                // Display the QR code section
+                const container = document.getElementById('qrContainer');
+                const titleElement = document.getElementById('qrTitle');
+                const urlElement = document.getElementById('qrUrl');
+                const qrElement = document.getElementById('qrCodeDisplay');
+                
+                titleElement.textContent = title;
+                urlElement.textContent = url;
+                
+                // Generate QR code using QR.js library (we'll add this inline for simplicity)
+                generateQRCodeSVG(url, qrElement);
+                
+                container.style.display = 'block';
+                container.scrollIntoView({ behavior: 'smooth' });
+            }).catch(error => {
+                alert('Error detecting IP address: ' + error.message);
+            });
+        }
+        
+        function generateQRCodeSVG(text, container) {
+            // Simple QR code generation using QR Code Generator
+            // This is a lightweight implementation
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(text)}`;
+            
+            container.innerHTML = `<img src="${qrUrl}" alt="QR Code" style="max-width: 200px; height: auto;" />`;
+        }
+        
+        async function getCurrentIP() {
+            // Try to get IP using WebRTC
+            return new Promise((resolve, reject) => {
+                const rtc = new RTCPeerConnection({
+                    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+                });
+                
+                rtc.createDataChannel('');
+                
+                rtc.onicecandidate = (event) => {
+                    if (event.candidate) {
+                        const candidate = event.candidate.candidate;
+                        const ipMatch = candidate.match(/(\d+\.\d+\.\d+\.\d+)/);
+                        if (ipMatch && !ipMatch[1].startsWith('127.')) {
+                            rtc.close();
+                            resolve(ipMatch[1]);
+                        }
+                    }
+                };
+                
+                rtc.createOffer().then(offer => rtc.setLocalDescription(offer)).catch(reject);
+                
+                // Timeout after 5 seconds
+                setTimeout(() => {
+                    rtc.close();
+                    reject(new Error('Timeout detecting IP address'));
+                }, 5000);
+            });
+        }
+        
         // ========================================
         // CORE SETTINGS MANAGEMENT
         // ========================================
