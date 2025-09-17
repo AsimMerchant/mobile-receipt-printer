@@ -381,6 +381,8 @@
                 <a href="MRP-11.html" class="btn btn-success">📄 Create Receipt</a>
                 <a href="MRP-11-settings.html" class="btn btn-info">⚙️ Server Settings</a>
                 <button onclick="testConnection()" class="btn btn-secondary">🧪 Test Connection</button>
+                <button onclick="testPrint()" class="btn btn-danger">🖨️ Test Print</button>
+                <button onclick="toggleNameListSection()" class="btn btn-secondary">📝 Manage Names</button>
             </div>
         </div>
 
@@ -451,6 +453,26 @@
                     Click "Refresh Available Reports" to see available biller data
                 </div>
             </div>
+        </div>
+
+        <!-- Name Management Section -->
+        <div id="nameListSection" class="card" style="display: none;">
+            <h2><span class="icon">📝</span>Manage Name Lists</h2>
+            <p>Manage biller and volunteer names for quick receipt creation</p>
+            
+            <div class="input-group">
+                <label for="billerNamesInput">Biller Names (one per line):</label>
+                <textarea id="billerNamesInput" class="textarea-input" placeholder="Enter biller names, one per line" style="width: 100%; min-height: 120px; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit;"></textarea>
+            </div>
+
+            <div class="input-group">
+                <label for="volunteerNamesInput">Volunteer Names (one per line):</label>
+                <textarea id="volunteerNamesInput" class="textarea-input" placeholder="Enter volunteer names, one per line" style="width: 100%; min-height: 120px; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit;"></textarea>
+            </div>
+
+            <button onclick="saveNameLists()" class="btn btn-success">
+                💾 Save Names
+            </button>
         </div>
 
         <!-- Setup Guide (Initially Hidden) -->
@@ -719,6 +741,76 @@
             ];
             
             resultsDiv.innerHTML = '<div class="code-block">' + info.join('<br>') + '</div>';
+        }
+
+        // ========================================
+        // TEST PRINT AND NAME MANAGEMENT FUNCTIONS
+        // ========================================
+
+        function testPrint() {
+            const savedServerAddress = localStorage.getItem('serverAddress');
+            if (!savedServerAddress) {
+                alert('Please configure your server address first.\n\nUse MRP-11-settings.html to set up your server.');
+                return;
+            }
+
+            if (!confirm('This will create a test receipt with sample data on the receipt creation page. Continue?')) {
+                return;
+            }
+
+            // Redirect to receipt page with test data
+            const testUrl = 'MRP-11.html?test=true';
+            window.open(testUrl, '_blank');
+        }
+
+        function toggleNameListSection() {
+            const section = document.getElementById('nameListSection');
+            const isVisible = section.style.display !== 'none';
+            section.style.display = isVisible ? 'none' : 'block';
+            
+            if (!isVisible) {
+                section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Load existing names
+                loadExistingNames();
+            }
+        }
+
+        function loadExistingNames() {
+            const billerNames = JSON.parse(localStorage.getItem('billerNames') || '[]');
+            const volunteerNames = JSON.parse(localStorage.getItem('volunteerNames') || '[]');
+            
+            document.getElementById('billerNamesInput').value = billerNames.join('\n');
+            document.getElementById('volunteerNamesInput').value = volunteerNames.join('\n');
+        }
+
+        function saveNameLists() {
+            const billerInput = document.getElementById('billerNamesInput').value.trim();
+            const volunteerInput = document.getElementById('volunteerNamesInput').value.trim();
+
+            let savedCount = 0;
+
+            if (billerInput) {
+                const billerNames = billerInput.split('\n').map(n => n.trim()).filter(n => n);
+                localStorage.setItem('billerNames', JSON.stringify(billerNames));
+                savedCount += billerNames.length;
+            }
+
+            if (volunteerInput) {
+                const volunteerNames = volunteerInput.split('\n').map(n => n.trim()).filter(n => n);
+                localStorage.setItem('volunteerNames', JSON.stringify(volunteerNames));
+                savedCount += volunteerNames.length;
+            }
+
+            if (savedCount > 0) {
+                alert(`Successfully saved ${savedCount} names!`);
+                
+                // Clear inputs and hide section
+                document.getElementById('billerNamesInput').value = '';
+                document.getElementById('volunteerNamesInput').value = '';
+                document.getElementById('nameListSection').style.display = 'none';
+            } else {
+                alert('Please enter some names to save.');
+            }
         }
 
         // ========================================
