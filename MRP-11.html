@@ -349,7 +349,6 @@
     <button class="fullscreen-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">
         ⛶
     </button>
-    
     <!-- Fullscreen Notification -->
     <div class="fullscreen-notification" id="fullscreenNotification">
         Press F11 or use browser fullscreen to prevent accidental exit
@@ -402,6 +401,15 @@
     </div>
 
     <script>
+        // ========================================
+        // GLOBAL VARIABLES
+        // ========================================
+        
+        // Directory handle for File System Access API (stored during session)
+        let sessionDirectoryHandle = null;
+        // User preference for file saving method
+        let useFileSystemAPI = true;
+        
         // ========================================
         // FULLSCREEN FUNCTIONALITY
         // ========================================
@@ -507,6 +515,64 @@
             }).replace(/\//g, '-');
         }
 
+        // ========================================
+        // FOLDER MANAGEMENT FUNCTIONS
+        // ========================================
+
+        async function selectReceiptFolder() {
+            if (!('showDirectoryPicker' in window)) {
+                alert('📁 Folder selection is not supported in this browser.\n\nUsing Downloads folder instead.');
+                useFileSystemAPI = false;
+                const statusElement = document.getElementById('saveMethodStatus');
+                if (statusElement) {
+                    statusElement.textContent = 'Downloads Folder';
+                }
+                return;
+            }
+
+            try {
+                const dirHandle = await window.showDirectoryPicker({
+                    mode: 'readwrite',
+                    startIn: 'downloads'
+                });
+
+                sessionDirectoryHandle = dirHandle;
+                localStorage.setItem('receiptFolderName', dirHandle.name);
+                
+                // Update status display
+                const statusElement = document.getElementById('saveMethodStatus');
+                if (statusElement) {
+                    statusElement.textContent = `📁 ${dirHandle.name}`;
+                }
+                
+                alert(`✅ Folder selected: ${dirHandle.name}\n\nReceipts will be saved here during this session.`);
+                
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    console.error('Error selecting folder:', error);
+                    alert('❌ Error selecting folder. Using Downloads folder.');
+                    useFileSystemAPI = false;
+                    const statusElement = document.getElementById('saveMethodStatus');
+                    if (statusElement) {
+                        statusElement.textContent = 'Downloads Folder';
+                    }
+                }
+            }
+        }
+
+        function toggleSaveMethod() {
+            useFileSystemAPI = !useFileSystemAPI;
+            const status = useFileSystemAPI ? 'Custom Folder' : 'Downloads Folder';
+            
+            // Update status display
+            const statusElement = document.getElementById('saveMethodStatus');
+            if (statusElement) {
+                statusElement.textContent = status;
+            }
+            
+            alert(`💾 Save method changed to: ${status}\n\n${useFileSystemAPI ? 'Receipts will be saved to your selected folder.' : 'Receipts will download to your default Downloads folder.'}`);
+        }
+
         function getBillerData(billerName) {
             const data = localStorage.getItem(billerName);
             return data ? JSON.parse(data) : { receipts: [], totalAmount: 0 };
@@ -579,6 +645,9 @@ Amount: Rs. ${amount}`;
             document.getElementById('receiptContent').textContent = previewText;
             document.getElementById('receiptPreview').style.display = 'block';
 
+            // Generate and save receipt text file
+            saveReceiptAsTextFile(receiptData, biller);
+
             // Update UI state
             document.getElementById('biller').disabled = true;
             document.getElementById('volunteer').disabled = true;
@@ -591,6 +660,86 @@ Amount: Rs. ${amount}`;
                 behavior: 'smooth', 
                 block: 'center' 
             });
+        }
+
+        async function saveReceiptAsTextFile(receiptData, biller) {
+            // Create the same receipt format as response.php
+            const receiptLines = [
+                "=======================",
+                `     RECEIPT #${receiptData.number}`,
+                "=======================",
+                `Date: ${receiptData.date}`,
+                `Time: ${receiptData.time}`,
+                "-----------------------",
+                `Biller: ${biller}`,
+                "-----------------------",
+                `Volunteer: ${receiptData.volunteer}`,
+                "-----------------------",
+                `AMOUNT: Rs. ${receiptData.amount}`,
+                "======================="
+            ];
+            
+            const receiptText = receiptLines.join('\n');
+            
+            // Create filename: billername-date-time-receiptnumber.txt
+            const safeDate = receiptData.date.replace(/\//g, '-');
+            const safeTime = receiptData.time.replace(/:/g, '-');
+            const safeBiller = biller.replace(/[^a-zA-Z0-9]/g, '_');
+            const filename = `${safeBiller}-${safeDate}-${safeTime}-${receiptData.number}.txt`;
+            
+            // Try File System Access API if enabled and supported
+            if (useFileSystemAPI && 'showDirectoryPicker' in window) {
+                try {
+                    // Use existing session handle if available
+                    let dirHandle = sessionDirectoryHandle;
+                    
+                    // If no handle, ask user to select folder
+                    if (!dirHandle) {
+                        dirHandle = await window.showDirectoryPicker({
+                            mode: 'readwrite',
+                            startIn: 'downloads'
+                        });
+                        
+                        // Store for rest of session
+                        sessionDirectoryHandle = dirHandle;
+                        localStorage.setItem('receiptFolderName', dirHandle.name);
+                    }
+                    
+                    // Create the file in the selected directory
+                    const fileHandle = await dirHandle.getFileHandle(filename, { create: true });
+                    const writable = await fileHandle.createWritable();
+                    await writable.write(receiptText);
+                    await writable.close();
+                    
+                    console.log(`Receipt saved to ${dirHandle.name}/${filename}`);
+                    return; // Exit early if successful
+                    
+                } catch (error) {
+                    if (error.name === 'AbortError') {
+                        // User cancelled, ask if they want to disable File System API
+                        if (confirm('❌ Folder selection cancelled.\n\nWould you like to switch to regular downloads instead?\n\n(You can change this back later)')) {
+                            useFileSystemAPI = false;
+                        } else {
+                            return; // Don't save if user cancelled and wants to keep trying
+                        }
+                    } else {
+                        console.log('Failed to save to selected folder, falling back to download:', error);
+                    }
+                    // Fall through to standard download method
+                }
+            }
+            
+            // Fallback: Standard download method
+            const blob = new Blob([receiptText], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
         }
 
         function clearFormAndShow() {
