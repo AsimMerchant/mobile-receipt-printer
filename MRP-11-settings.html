@@ -508,25 +508,6 @@
             </div>
         </div>
 
-        <!-- QR Code Generator -->
-        <div class="qr-section">
-            <h2><span>📱</span>QR Code Generator</h2>
-            <p>Generate QR codes for easy access to your Mobile Receipt Printer</p>
-            
-            <div class="btn-grid">
-                <button onclick="generateQRCode('main')" class="btn btn-primary">🏠 Main Page QR</button>
-                <button onclick="generateQRCode('receipt')" class="btn btn-secondary">📄 Receipt Page QR</button>
-                <button onclick="generateQRCode('settings')" class="btn btn-info">⚙️ Settings Page QR</button>
-            </div>
-            
-            <div class="qr-container" id="qrContainer" style="display: none;">
-                <h3 id="qrTitle">QR Code</h3>
-                <div class="qr-url" id="qrUrl"></div>
-                <div class="qr-code" id="qrCodeDisplay"></div>
-                <p><small>Scan this QR code to access the page on any device</small></p>
-            </div>
-        </div>
-
         <!-- Manual Server Configuration -->
         <div class="section-card">
             <h2><span>🔧</span>Server Configuration</h2>
@@ -560,7 +541,6 @@
             <div class="btn-grid">
                 <button onclick="fetchAndSetLocalIP()" class="btn btn-success">🌐 Use My IP</button>
                 <button onclick="detectDeviceHostname()" class="btn btn-info">📱 Detect Hostname</button>
-                <button onclick="scanNetwork()" class="btn btn-warning">🔍 Scan Network</button>
             </div>
         </div>
 
@@ -580,72 +560,6 @@
                 <button onclick="clearAllServers()" class="btn btn-danger">🗑️ Clear All</button>
                 <button onclick="exportSettings()" class="btn btn-info">📤 Export Settings</button>
                 <button onclick="importSettings()" class="btn btn-warning">📥 Import Settings</button>
-            </div>
-        </div>
-
-        <!-- Advanced Settings -->
-        <div class="section-card">
-            <h2><span>🔧</span>Advanced Settings</h2>
-            
-            <h3>Connection Settings</h3>
-            <div class="settings-grid">
-                <div class="input-group">
-                    <label for="timeoutInput">Connection Timeout (seconds):</label>
-                    <input id="timeoutInput" type="number" value="5" min="1" max="30">
-                </div>
-                
-                <div class="input-group">
-                    <label for="retriesInput">Retry Attempts:</label>
-                    <input id="retriesInput" type="number" value="3" min="0" max="10">
-                </div>
-            </div>
-            
-            <h3>Network Preferences</h3>
-            <div class="input-group">
-                <label>
-                    Auto-connect on startup
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="autoConnectToggle">
-                        <span class="slider"></span>
-                    </label>
-                </label>
-            </div>
-            
-            <div class="input-group">
-                <label>
-                    Show connection notifications
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="notificationsToggle" checked>
-                        <span class="slider"></span>
-                    </label>
-                </label>
-            </div>
-            
-            <button onclick="saveAdvancedSettings()" class="btn btn-success btn-full">💾 Save Advanced Settings</button>
-        </div>
-
-        <!-- Testing & Diagnostics -->
-        <div class="section-card">
-            <h2><span>🧪</span>Testing & Diagnostics</h2>
-            
-            <div class="btn-grid">
-                <button onclick="runFullDiagnostics()" class="btn btn-info">🔍 Full Diagnostics</button>
-                <button onclick="testAPIEndpoint()" class="btn btn-warning">🔗 Test API</button>
-                <button onclick="showNetworkInfo()" class="btn btn-secondary">📊 Network Info</button>
-                <button onclick="clearDiagnostics()" class="btn btn-danger">🗑️ Clear Log</button>
-            </div>
-            
-            <div id="diagnosticsOutput" class="diagnostics-output"></div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="section-card">
-            <h2><span>⚡</span>Quick Actions</h2>
-            
-            <div class="btn-grid">
-                <button onclick="window.location.href='MRP-11.html'" class="btn btn-success">📄 Create Receipt</button>
-                <button onclick="resetAllSettings()" class="btn btn-danger">🔄 Reset All Settings</button>
-                <button onclick="window.location.href='MRP-11-main.html'" class="btn btn-info">🏠 Back to Home</button>
             </div>
         </div>
     </div>
@@ -722,96 +636,6 @@
                 document.body.classList.remove('fullscreen-active');
             }
         });
-        
-        // ========================================
-        // QR CODE FUNCTIONALITY
-        // ========================================
-        
-        function generateQRCode(pageType) {
-            // Get the current IP address
-            getCurrentIP().then(ip => {
-                if (!ip) {
-                    alert('Unable to detect IP address. Please ensure you are connected to a network.');
-                    return;
-                }
-                
-                let url, title;
-                const baseUrl = `http://${ip}:8080`;
-                
-                switch(pageType) {
-                    case 'main':
-                        url = `${baseUrl}/MRP-11-main.html`;
-                        title = 'Main Page QR Code';
-                        break;
-                    case 'receipt':
-                        url = `${baseUrl}/MRP-11.html`;
-                        title = 'Receipt Creation QR Code';
-                        break;
-                    case 'settings':
-                        url = `${baseUrl}/MRP-11-settings.html`;
-                        title = 'Settings Page QR Code';
-                        break;
-                    default:
-                        url = `${baseUrl}/MRP-11-main.html`;
-                        title = 'Main Page QR Code';
-                }
-                
-                // Display the QR code section
-                const container = document.getElementById('qrContainer');
-                const titleElement = document.getElementById('qrTitle');
-                const urlElement = document.getElementById('qrUrl');
-                const qrElement = document.getElementById('qrCodeDisplay');
-                
-                titleElement.textContent = title;
-                urlElement.textContent = url;
-                
-                // Generate QR code using QR.js library (we'll add this inline for simplicity)
-                generateQRCodeSVG(url, qrElement);
-                
-                container.style.display = 'block';
-                container.scrollIntoView({ behavior: 'smooth' });
-            }).catch(error => {
-                alert('Error detecting IP address: ' + error.message);
-            });
-        }
-        
-        function generateQRCodeSVG(text, container) {
-            // Simple QR code generation using QR Code Generator
-            // This is a lightweight implementation
-            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(text)}`;
-            
-            container.innerHTML = `<img src="${qrUrl}" alt="QR Code" style="max-width: 200px; height: auto;" />`;
-        }
-        
-        async function getCurrentIP() {
-            // Try to get IP using WebRTC
-            return new Promise((resolve, reject) => {
-                const rtc = new RTCPeerConnection({
-                    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
-                });
-                
-                rtc.createDataChannel('');
-                
-                rtc.onicecandidate = (event) => {
-                    if (event.candidate) {
-                        const candidate = event.candidate.candidate;
-                        const ipMatch = candidate.match(/(\d+\.\d+\.\d+\.\d+)/);
-                        if (ipMatch && !ipMatch[1].startsWith('127.')) {
-                            rtc.close();
-                            resolve(ipMatch[1]);
-                        }
-                    }
-                };
-                
-                rtc.createOffer().then(offer => rtc.setLocalDescription(offer)).catch(reject);
-                
-                // Timeout after 5 seconds
-                setTimeout(() => {
-                    rtc.close();
-                    reject(new Error('Timeout detecting IP address'));
-                }, 5000);
-            });
-        }
         
         // ========================================
         // CORE SETTINGS MANAGEMENT
@@ -1136,29 +960,6 @@
             }
         }
 
-        function scanNetwork() {
-            logToDiagnostics('🔍 Starting network scan...');
-            logToDiagnostics('ℹ️ This is a simulated scan - actual network scanning requires more advanced techniques');
-            
-            // Get current IP to determine network range
-            fetchAndSetLocalIP();
-            
-            // Simulate network scan results
-            setTimeout(() => {
-                const commonPorts = ['8080', '80', '3000', '8000'];
-                const commonIPs = ['192.168.1.1', '192.168.0.1', '10.0.0.1'];
-                
-                logToDiagnostics('📡 Common server locations to try:');
-                commonIPs.forEach(ip => {
-                    commonPorts.forEach(port => {
-                        logToDiagnostics(`   • ${ip}:${port}`);
-                    });
-                });
-                
-                logToDiagnostics('ℹ️ Manually test these addresses or use "Use My IP" for local server');
-            }, 1000);
-        }
-
         // ========================================
         // SERVER LIST MANAGEMENT
         // ========================================
@@ -1250,19 +1051,6 @@
         // ADVANCED SETTINGS
         // ========================================
 
-        function saveAdvancedSettings() {
-            const settings = {
-                timeout: document.getElementById('timeoutInput').value,
-                retries: document.getElementById('retriesInput').value,
-                autoConnect: document.getElementById('autoConnectToggle').checked,
-                notifications: document.getElementById('notificationsToggle').checked
-            };
-            
-            localStorage.setItem('advancedSettings', JSON.stringify(settings));
-            logToDiagnostics(`💾 Advanced settings saved`);
-            alert('Advanced settings saved successfully!');
-        }
-
         function loadAdvancedSettings() {
             const settings = JSON.parse(localStorage.getItem('advancedSettings') || '{}');
             
@@ -1289,123 +1077,6 @@
             output.textContent += logEntry;
             output.classList.add('show');
             output.scrollTop = output.scrollHeight;
-        }
-
-        function clearDiagnostics() {
-            document.getElementById('diagnosticsOutput').textContent = '';
-            document.getElementById('diagnosticsOutput').classList.remove('show');
-        }
-
-        function runFullDiagnostics() {
-            clearDiagnostics();
-            logToDiagnostics('🔍 Starting full system diagnostics...');
-            logToDiagnostics('');
-            
-            // System info
-            logToDiagnostics('📱 SYSTEM INFORMATION:');
-            logToDiagnostics(`   Browser: ${navigator.userAgent.substring(0, 50)}...`);
-            logToDiagnostics(`   Platform: ${navigator.platform}`);
-            logToDiagnostics(`   Language: ${navigator.language}`);
-            logToDiagnostics(`   Online: ${navigator.onLine ? 'Yes' : 'No'}`);
-            logToDiagnostics(`   Screen: ${window.screen.width}x${window.screen.height}`);
-            logToDiagnostics(`   Viewport: ${window.innerWidth}x${window.innerHeight}`);
-            logToDiagnostics('');
-            
-            // Current settings
-            logToDiagnostics('⚙️ CURRENT SETTINGS:');
-            const serverAddress = localStorage.getItem('serverAddress');
-            logToDiagnostics(`   Default Server: ${serverAddress || 'Not set'}`);
-            
-            const servers = getStoredServerAddresses();
-            logToDiagnostics(`   Saved Servers: ${servers.length}`);
-            servers.forEach(server => {
-                logToDiagnostics(`      • ${server}`);
-            });
-            
-            const advancedSettings = JSON.parse(localStorage.getItem('advancedSettings') || '{}');
-            logToDiagnostics(`   Timeout: ${advancedSettings.timeout || 5}s`);
-            logToDiagnostics(`   Retries: ${advancedSettings.retries || 3}`);
-            logToDiagnostics(`   Auto-connect: ${advancedSettings.autoConnect ? 'Enabled' : 'Disabled'}`);
-            logToDiagnostics(`   Notifications: ${advancedSettings.notifications !== false ? 'Enabled' : 'Disabled'}`);
-            logToDiagnostics('');
-            
-            // Connection test
-            if (serverAddress) {
-                logToDiagnostics('🧪 CONNECTION TEST:');
-                logToDiagnostics(`   Testing: ${serverAddress}`);
-                
-                testServerConnection(serverAddress).then(success => {
-                    if (success) {
-                        logToDiagnostics(`   ✅ Connection successful`);
-                        logToDiagnostics(`   📡 Server is responding properly`);
-                    } else {
-                        logToDiagnostics(`   ❌ Connection failed`);
-                        logToDiagnostics(`   ⚠️ Server may be offline or unreachable`);
-                    }
-                    logToDiagnostics('');
-                    logToDiagnostics('🔍 Diagnostics complete');
-                });
-            } else {
-                logToDiagnostics('🧪 CONNECTION TEST:');
-                logToDiagnostics('   ⚠️ No server configured for testing');
-                logToDiagnostics('');
-                logToDiagnostics('🔍 Diagnostics complete');
-            }
-        }
-
-        function testAPIEndpoint() {
-            const serverAddress = localStorage.getItem('serverAddress');
-            if (!serverAddress) {
-                alert('No server configured. Please set up a server address first.');
-                return;
-            }
-            
-            logToDiagnostics(`🔗 Testing API endpoint: ${serverAddress}/response.php`);
-            
-            // Test with sample receipt data
-            const testParams = new URLSearchParams({
-                num: '999',
-                date: new Date().toLocaleDateString(),
-                biller: 'Test Biller',
-                time: new Date().toLocaleTimeString(),
-                volunteer: 'Test Volunteer',
-                amount: '100.00'
-            });
-            
-            const apiUrl = `http://${serverAddress}/response.php?${testParams.toString()}`;
-            
-            fetch(apiUrl)
-                .then(response => response.json())
-                .then(data => {
-                    logToDiagnostics(`✅ API test successful`);
-                    logToDiagnostics(`📋 Response contains ${Object.keys(data).length} receipt lines`);
-                    logToDiagnostics(`🎯 API is working properly`);
-                    alert('✅ API endpoint is working correctly!');
-                })
-                .catch(error => {
-                    logToDiagnostics(`❌ API test failed: ${error.message}`);
-                    alert('❌ API endpoint test failed. Check server and response.php file.');
-                });
-        }
-
-        function showNetworkInfo() {
-            logToDiagnostics('🌐 NETWORK INFORMATION:');
-            logToDiagnostics(`   Current URL: ${window.location.href}`);
-            logToDiagnostics(`   Protocol: ${window.location.protocol}`);
-            logToDiagnostics(`   Hostname: ${window.location.hostname}`);
-            logToDiagnostics(`   Port: ${window.location.port || '80'}`);
-            logToDiagnostics(`   Connection: ${navigator.connection ? navigator.connection.effectiveType : 'Unknown'}`);
-            logToDiagnostics('');
-            
-            // Try to get more network info
-            if (navigator.connection) {
-                const conn = navigator.connection;
-                logToDiagnostics('📶 CONNECTION DETAILS:');
-                logToDiagnostics(`   Type: ${conn.effectiveType || 'Unknown'}`);
-                logToDiagnostics(`   Downlink: ${conn.downlink || 'Unknown'} Mbps`);
-                logToDiagnostics(`   RTT: ${conn.rtt || 'Unknown'} ms`);
-                logToDiagnostics(`   Save Data: ${conn.saveData ? 'Enabled' : 'Disabled'}`);
-            }
         }
 
         // ========================================
@@ -1487,35 +1158,6 @@
         // ========================================
         // RESET FUNCTIONS
         // ========================================
-
-        function resetAllSettings() {
-            if (!confirm('Reset all settings? This will delete all server configurations and preferences. This cannot be undone.')) {
-                return;
-            }
-            
-            if (!confirm('Are you absolutely sure? This will clear everything.')) {
-                return;
-            }
-            
-            // Clear all localStorage data related to MRP
-            localStorage.removeItem('serverAddress');
-            localStorage.removeItem('serverAddresses');
-            localStorage.removeItem('advancedSettings');
-            
-            // Refresh UI
-            loadAdvancedSettings();
-            refreshServerList();
-            populateServerAddressDatalist();
-            updateServerStatus('disconnected', null, 'Settings reset');
-            clearDiagnostics();
-            
-            // Clear form
-            document.getElementById('serverIpInput').value = '';
-            document.getElementById('serverPortInput').value = '8080';
-            
-            logToDiagnostics('🔄 All settings have been reset');
-            alert('All settings have been reset to defaults.');
-        }
 
         // ========================================
         // INITIALIZATION

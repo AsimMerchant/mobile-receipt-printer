@@ -380,23 +380,13 @@
             <div style="margin-top: 15px;">
                 <a href="MRP-11.html" class="btn btn-success">📄 Create Receipt</a>
                 <a href="MRP-11-settings.html" class="btn btn-info">⚙️ Server Settings</a>
-                <button onclick="testConnection()" class="btn btn-secondary">🧪 Test Connection</button>
-                <button onclick="testPrint()" class="btn btn-danger">🖨️ Test Print</button>
+                <button onclick="chooseReceiptFolder()" class="btn btn-warning">📁 Choose Receipt Folder</button>
                 <button onclick="toggleNameListSection()" class="btn btn-secondary">📝 Manage Names</button>
             </div>
         </div>
 
         <!-- Main Content Grid -->
         <div class="grid">
-            <!-- Termux Setup Card -->
-            <div class="card">
-                <h2><span class="icon">📱</span>Termux Server Setup</h2>
-                <p>Complete guide to set up your Android phone as a receipt printing server using Termux.</p>
-                <div style="margin-top: 15px;">
-                    <button onclick="toggleSetupGuide()" class="btn">📋 Setup Guide</button>
-                    <a href="#troubleshooting" class="btn btn-secondary">🔧 Troubleshooting</a>
-                </div>
-            </div>
 
             <!-- Version Library Card -->
             <div class="card">
@@ -424,17 +414,6 @@
                 </div>
             </div>
 
-            <!-- Testing & Diagnostics Card -->
-            <div class="card">
-                <h2><span class="icon">🧪</span>Testing & Diagnostics</h2>
-                <p>Test your server connection and diagnose network issues.</p>
-                <div style="margin-top: 15px;">
-                    <button onclick="runDiagnostics()" class="btn">🔍 Run Diagnostics</button>
-                    <button onclick="showServerInfo()" class="btn btn-info">📊 Server Info</button>
-                    <a href="response.php" target="_blank" class="btn btn-secondary">🔗 API Test</a>
-                </div>
-                <div id="diagnosticsResults" style="margin-top: 15px; display: none;"></div>
-            </div>
         </div>
 
         <!-- Biller Reports Section -->
@@ -473,120 +452,6 @@
             <button onclick="saveNameLists()" class="btn btn-success">
                 💾 Save Names
             </button>
-        </div>
-
-        <!-- Setup Guide (Initially Hidden) -->
-        <div id="setupGuide" class="setup-steps" style="display: none;">
-            <h2>📱 Complete Termux Setup Guide</h2>
-            
-            <div class="step">
-                <div class="step-number">1</div>
-                <div class="step-content">
-                    <h4>Install Termux</h4>
-                    <p>Download and install Termux from F-Droid or Google Play Store. F-Droid version is recommended for latest updates.</p>
-                </div>
-            </div>
-
-            <div class="step">
-                <div class="step-number">2</div>
-                <div class="step-content">
-                    <h4>Initial Setup</h4>
-                    <p>Open Termux and run the initial setup commands:</p>
-                    <div class="code-block">pkg update && pkg upgrade -y<br>pkg install php curl wget git python openssh</div>
-                </div>
-            </div>
-
-            <div class="step">
-                <div class="step-number">3</div>
-                <div class="step-content">
-                    <h4>Storage Access</h4>
-                    <p>Grant Termux access to your device storage:</p>
-                    <div class="code-block">termux-setup-storage</div>
-                    <p>Allow the permission when prompted.</p>
-                </div>
-            </div>
-
-            <div class="step">
-                <div class="step-number">4</div>
-                <div class="step-content">
-                    <h4>Download Files</h4>
-                    <p>Navigate to shared storage and download the MRP files:</p>
-                    <div class="code-block">cd /storage/emulated/0/<br>wget https://your-server.com/MRP-11.html<br>wget https://your-server.com/response.php</div>
-                    <p>Or transfer files manually to your Downloads folder.</p>
-                </div>
-            </div>
-
-            <div class="step">
-                <div class="step-number">5</div>
-                <div class="step-content">
-                    <h4>Start Server</h4>
-                    <p>Start the PHP server to host your files:</p>
-                    <div class="code-block">php -S 0.0.0.0:8080</div>
-                    <p>Server will start and display "Development Server started"</p>
-                </div>
-            </div>
-
-            <div class="step">
-                <div class="step-number">6</div>
-                <div class="step-content">
-                    <h4>Find Your IP</h4>
-                    <p>In a new Termux session, find your phone's IP address:</p>
-                    <div class="code-block">ip route get 1.1.1.1 | grep -oP 'src \K\S+'</div>
-                    <p>Note this IP address for network access.</p>
-                </div>
-            </div>
-
-            <div class="step">
-                <div class="step-number">7</div>
-                <div class="step-content">
-                    <h4>Test Access</h4>
-                    <p>Test server access from another device:</p>
-                    <div class="code-block">http://[YOUR-PHONE-IP]:8080</div>
-                    <p>You should see this landing page.</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Troubleshooting Section -->
-        <div id="troubleshooting" class="setup-steps">
-            <h2>🔧 Troubleshooting Guide</h2>
-            
-            <div class="step">
-                <div class="step-number">❗</div>
-                <div class="step-content">
-                    <h4>Server Won't Start</h4>
-                    <ul style="margin-left: 20px;">
-                        <li><strong>Port in use:</strong> Try <code>php -S 0.0.0.0:8081</code></li>
-                        <li><strong>Permission denied:</strong> Check file permissions</li>
-                        <li><strong>PHP not found:</strong> Reinstall with <code>pkg install php</code></li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="step">
-                <div class="step-number">❗</div>
-                <div class="step-content">
-                    <h4>Can't Access from Other Devices</h4>
-                    <ul style="margin-left: 20px;">
-                        <li><strong>Wrong IP:</strong> Re-check phone IP address</li>
-                        <li><strong>Firewall:</strong> Disable phone firewall temporarily</li>
-                        <li><strong>Network isolation:</strong> Ensure devices on same network</li>
-                        <li><strong>Server binding:</strong> Use <code>0.0.0.0:8080</code> not <code>localhost</code></li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="step">
-                <div class="step-number">❗</div>
-                <div class="step-content">
-                    <h4>Receipt Printing Issues</h4>
-                    <ul style="margin-left: 20px;">
-                        <li><strong>Printer not found:</strong> Check Bluetooth pairing</li>
-                        <li><strong>Print failure:</strong> Verify printer supports URL schemes</li>
-                        <li><strong>Format issues:</strong> Test with simpler receipt data</li>
-                    </ul>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -675,25 +540,6 @@
             }
         }
 
-        function testConnection() {
-            const resultsDiv = document.getElementById('diagnosticsResults');
-            resultsDiv.style.display = 'block';
-            resultsDiv.innerHTML = '<div class="code-block">🧪 Testing connection...<br><br>✅ Landing page loaded successfully<br>⏳ Testing API endpoint...</div>';
-            
-            // Test API endpoint
-            fetch('response.php')
-                .then(response => {
-                    if (response.ok) {
-                        resultsDiv.innerHTML = '<div class="code-block">🧪 Connection Test Results:<br><br>✅ Landing page: OK<br>✅ API endpoint: OK<br>✅ Server is running properly<br><br>🎉 Ready to create receipts!</div>';
-                    } else {
-                        resultsDiv.innerHTML = '<div class="code-block">🧪 Connection Test Results:<br><br>✅ Landing page: OK<br>❌ API endpoint: Error ' + response.status + '<br>⚠️ Check response.php file</div>';
-                    }
-                })
-                .catch(error => {
-                    resultsDiv.innerHTML = '<div class="code-block">🧪 Connection Test Results:<br><br>✅ Landing page: OK<br>❌ API endpoint: Network error<br>⚠️ Check server configuration</div>';
-                });
-        }
-
         function runDiagnostics() {
             const resultsDiv = document.getElementById('diagnosticsResults');
             resultsDiv.style.display = 'block';
@@ -744,24 +590,87 @@
         }
 
         // ========================================
-        // TEST PRINT AND NAME MANAGEMENT FUNCTIONS
+        // RECEIPT FOLDER MANAGEMENT
         // ========================================
 
-        function testPrint() {
-            const savedServerAddress = localStorage.getItem('serverAddress');
-            if (!savedServerAddress) {
-                alert('Please configure your server address first.\n\nUse MRP-11-settings.html to set up your server.');
+        // Global variable to store directory handle during session
+        let selectedDirectoryHandle = null;
+
+        async function chooseReceiptFolder() {
+            // Check if File System Access API is supported
+            if (!('showDirectoryPicker' in window)) {
+                alert('📁 Folder selection is not supported in this browser.\n\nPlease use Chrome, Edge, or a similar modern browser.\n\nFor now, receipts will save to your default Downloads folder.');
                 return;
             }
 
-            if (!confirm('This will create a test receipt with sample data on the receipt creation page. Continue?')) {
-                return;
-            }
+            try {
+                // Request permission to access a directory
+                const dirHandle = await window.showDirectoryPicker({
+                    mode: 'readwrite',
+                    startIn: 'downloads'
+                });
 
-            // Redirect to receipt page with test data
-            const testUrl = 'MRP-11.html?test=true';
-            window.open(testUrl, '_blank');
+                // Store the directory handle for the session
+                selectedDirectoryHandle = dirHandle;
+                localStorage.setItem('receiptFolderName', dirHandle.name);
+                
+                // We can't store the handle directly, so we'll request it each time
+                // This is a browser security limitation
+                
+                alert(`✅ Receipt folder selected: ${dirHandle.name}\n\nAll future receipts will be saved to this folder.\n\nNote: You may need to grant permission again when creating receipts.`);
+                
+                // Update UI to show selected folder
+                updateFolderStatus(dirHandle.name);
+                
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    // User cancelled the dialog
+                    console.log('Folder selection cancelled');
+                } else {
+                    console.error('Error selecting folder:', error);
+                    alert('❌ Error selecting folder. Receipts will save to Downloads folder.');
+                }
+            }
         }
+
+        function updateFolderStatus(folderName) {
+            // Add a status indicator or update button text
+            const button = document.querySelector('button[onclick="chooseReceiptFolder()"]');
+            if (button && folderName) {
+                button.innerHTML = `📁 ${folderName} (Selected)`;
+                button.style.backgroundColor = '#28a745';
+                button.style.color = 'white';
+            }
+        }
+
+        function checkFolderStatus() {
+            // Check if a folder was previously selected
+            const folderName = localStorage.getItem('receiptFolderName');
+            if (folderName) {
+                updateFolderStatus(folderName);
+            }
+        }
+
+        // Function to get current directory handle (for use by receipt page)
+        function getSelectedDirectoryHandle() {
+            return selectedDirectoryHandle;
+        }
+
+        // Function to clear folder selection
+        function clearFolderSelection() {
+            selectedDirectoryHandle = null;
+            localStorage.removeItem('receiptFolderName');
+            const button = document.querySelector('button[onclick="chooseReceiptFolder()"]');
+            if (button) {
+                button.innerHTML = '📁 Choose Receipt Folder';
+                button.style.backgroundColor = '';
+                button.style.color = '';
+            }
+        }
+
+        // ========================================
+        // NAME MANAGEMENT FUNCTIONS
+        // ========================================
 
         function toggleNameListSection() {
             const section = document.getElementById('nameListSection');
@@ -1062,6 +971,9 @@
                         statusElement.innerHTML = '❌ Server: receipt.com:8080 (Check Setup)';
                         statusElement.style.background = '#dc3545';
                     });
+                
+                // Check if receipt folder was previously selected
+                checkFolderStatus();
             }, 1000);
         });
     </script>
