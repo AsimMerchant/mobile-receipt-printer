@@ -1,29 +1,32 @@
 # 📱 Mobile Receipt Printer (MRP) System
 
-A comprehensive web-based receipt printing system designed for mobile devices, featuring Bluetooth printer integration and network-based server communication.
+A streamlined web-based receipt printing system for mobile devices, featuring Bluetooth printer integration and network-based server communication.
 
-## 🚀 **Latest Version: MRP-11**
+---
 
-The MRP-11 system features a **clean, mobile-first interface** with **separation of concerns** architecture:
+## 🚀 **Latest Update: September 2025**
 
-### **🎯 System Components:**
+- **Minimal, distraction-free UI:** Only core receipt creation and navigation remain. All advanced, diagnostic, QR code, and test print features have been removed for simplicity and reliability.
+- **Automatic receipt saving:** Receipts are saved directly to your chosen folder using the File System Access API. The folder selection prompt appears only once per browser session—no user-facing folder controls or status indicators.
+- **Landing and settings pages:** Now focused solely on navigation and essential server configuration. All setup guides, troubleshooting, and advanced options have been removed.
+- **No Termux/Android-specific setup required:** The system works in any modern browser (Chrome/Edge recommended for folder saving). The Termux setup guide and related instructions have been removed from the UI.
 
-1. **📱 MRP-11.html** - Simplified receipt creation interface
-   - Clean 3-button design (Create Receipt, Test Print, Manage Names)
-   - Mobile-optimized responsive design
-   - Focus on core receipt generation functionality
+---
 
-2. **🏠 MRP-11-main.html** - Comprehensive landing page
-   - Termux setup guide and installation instructions
-   - Version library with access to all MRP versions
+## **System Components:**
+
+1. **📱 MRP-11.html** - Receipt creation interface
+   - Clean, mobile-optimized design
+   - Focused on core receipt generation
+   - Automatic file saving (no user controls)
+
+2. **🏠 MRP-11-main.html** - Landing page
+   - Simple navigation to receipt and settings
    - Biller reports and data management
-   - Testing and diagnostics tools
 
-3. **⚙️ MRP-11-settings.html** - Advanced server configuration
-   - Server auto-detection and manual configuration
-   - Network diagnostics and connection testing
-   - Settings import/export functionality
-   - Advanced configuration options
+3. **⚙️ MRP-11-settings.html** - Server configuration
+   - Manual and auto-detection of server address
+   - No advanced/diagnostic/QR features
 
 ## 📋 **Features**
 
@@ -33,13 +36,7 @@ The MRP-11 system features a **clean, mobile-first interface** with **separation
 - ✅ **Data Persistence** - Local storage of receipt data and biller information
 - ✅ **Server Communication** - Network-based API for receipt processing
 - ✅ **Mobile Optimization** - Responsive design for Android smartphones
-
-### **Advanced Features:**
-- ✅ **Auto-Detection** - WebRTC-based IP and hostname detection
-- ✅ **Report Generation** - Download individual or combined biller reports
-- ✅ **Data Management** - View, export, and clear stored receipt data
-- ✅ **Connection Testing** - Comprehensive server and network diagnostics
-- ✅ **Settings Management** - Import/export configuration for backup
+- ✅ **Automatic File Saving** - Receipts are saved directly to your chosen folder (one-time prompt per session, no user controls)
 
 ## 📥 **Quick Download**
 
@@ -88,29 +85,12 @@ Get all files for your Mobile Receipt Printer system:
 
 ## 🚀 **Quick Start**
 
-### **1. Server Setup (Termux)**
-```bash
-# Install Termux from F-Droid
-# Install PHP
-pkg update && pkg install php
+1. **Open MRP-11-main.html** in a modern browser (Chrome/Edge recommended)
+2. **Select your receipt folder** when prompted (first receipt creation only)
+3. **Configure server settings** if needed (MRP-11-settings.html)
+4. **Create receipts** with MRP-11.html
 
-# Navigate to your files
-cd /storage/emulated/0/
-
-# Start PHP server
-php -S 0.0.0.0:8080
-```
-
-### **2. Access the System**
-- **Main Interface:** `http://[phone-ip]:8080/MRP-11.html`
-- **Landing Page:** `http://[phone-ip]:8080/MRP-11-main.html`
-- **Settings:** `http://[phone-ip]:8080/MRP-11-settings.html`
-
-### **3. First Time Setup**
-1. Open `MRP-11-main.html` for setup guidance
-2. Configure server settings if needed
-3. Test connection and printer functionality
-4. Start creating receipts with `MRP-11.html`
+> **Note:** All advanced, diagnostic, QR code, and test print features have been removed for a streamlined experience. The system is now focused on fast, reliable receipt creation and saving.
 
 ## 📊 **Version History**
 
