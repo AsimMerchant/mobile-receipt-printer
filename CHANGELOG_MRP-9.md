@@ -1,5 +1,21 @@
 # Changelog - MRP-9.html (Mobile Receipt Printer)
 
+## [v1.3] - 2025-09-22
+
+### Changed
+- **MRP-11.html**: Improved File System Access API user experience. Now prompts for folder selection only once per session. Removed all user-facing folder controls and status indicators for a cleaner interface.
+- **MRP-11-main.html**: Removed Termux setup, testing, diagnostics, troubleshooting, and legacy quick actions sections. UI is now focused on core navigation and receipt management.
+- **MRP-11-settings.html**: Removed Quick Actions, Testing & Diagnostics, Advanced Settings, QR Code Generator, and scan network functionality. Streamlined for essential server configuration only.
+- **.github/copilot-instructions.md**: Added/updated project-specific Copilot instructions for sequential thinking and evidence-based responses.
+- **response.txt**: Deleted obsolete sample response file.
+
+### Technical Improvements
+- **Dead Code Removal**: Eliminated 255+ lines of unused or legacy code across main, settings, and landing pages.
+- **UI Cleanup**: All advanced, diagnostic, and QR code features removed for a simplified, production-ready interface.
+- **File Save Logic**: Receipts now save automatically to the chosen folder (or Downloads as fallback) with no user prompt after initial selection.
+
+---
+
 ## [v1.2] - 2025-09-11
 
 ### Added
@@ -98,4 +114,4 @@ The system constructs valid URLs for both formats:
 
 ---
 *Changelog maintained by: Development Team*
-*Last Updated: September 11, 2025*
+*Last Updated: September 22, 2025*
