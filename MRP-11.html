@@ -646,8 +646,8 @@ Amount: Rs. ${amount}`;
             document.getElementById('receiptPreview').style.display = 'block';
 
             // Generate and save receipt files
-            // saveReceiptAsTextFile(receiptData, biller); // Commented out - using PRN files instead
-            saveReceiptAsPRN(receiptData, biller);
+            // saveReceiptAsTextFile(receiptData, biller); // Commented out - using PNG files instead
+            saveReceiptAsPNG(receiptData, biller);
 
             // Update UI state
             document.getElementById('biller').disabled = true;
@@ -743,16 +743,28 @@ Amount: Rs. ${amount}`;
             document.body.removeChild(a);
         }
 
-        async function saveReceiptAsPRN(receiptData, biller) {
-            // ESC/POS command constants
-            const ESC = '\x1B';
-            const GS = '\x1D';
-            const LF = '\x0A';
+        async function saveReceiptAsPNG(receiptData, biller) {
+            // Create canvas optimized for 58mm thermal printer (384px width, 203 DPI)
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
             
-            // Initialize printer and reset formatting
-            let prnData = ESC + '@'; // Initialize printer
+            // Set canvas dimensions for 58mm thermal printer
+            canvas.width = 384; // 58mm at 203 DPI
+            const margin = 16;   // Side margins
+            const contentWidth = canvas.width - (margin * 2);
             
-            // Define receipt lines with formatting (matching response.php exactly)
+            // Set initial height (will adjust based on content)
+            canvas.height = 600;
+            
+            // Set background to white
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Set text properties
+            ctx.fillStyle = '#000000';
+            ctx.textBaseline = 'top';
+            
+            // Define receipt lines with formatting (matching response.php)
             const receiptLines = [
                 { text: "=======================", bold: false, large: false, center: true },
                 { text: `     RECEIPT #${receiptData.number}`, bold: true, large: true, center: true },
@@ -768,95 +780,101 @@ Amount: Rs. ${amount}`;
                 { text: "=======================", bold: false, large: false, center: true }
             ];
             
-            // Generate ESC/POS commands for each line
+            // Font settings optimized for 58mm thermal printer
+            const normalFontSize = 14;
+            const largeFontSize = 22;  // Larger for better visibility on thermal printer
+            const normalLineHeight = 22;
+            const largeLineHeight = 32;
+            
+            // Draw each line
+            let yPos = 16; // Top margin
+            
             receiptLines.forEach(line => {
-                // Set alignment: 0=left, 1=center, 2=right
-                const alignment = line.center ? '\x01' : '\x00';
-                prnData += ESC + 'a' + alignment;
+                // Set font based on formatting
+                let fontSize = line.large ? largeFontSize : normalFontSize;
+                let fontWeight = line.bold ? 'bold' : 'normal';
+                ctx.font = `${fontWeight} ${fontSize}px 'Courier New', monospace`;
                 
-                // Set bold: 0=off, 1=on
-                const boldCmd = line.bold ? '\x01' : '\x00';
-                prnData += ESC + 'E' + boldCmd;
+                // Calculate x position for alignment
+                let xPos;
+                if (line.center) {
+                    const textWidth = ctx.measureText(line.text).width;
+                    xPos = (canvas.width - textWidth) / 2;
+                } else {
+                    xPos = margin; // Left margin
+                }
                 
-                // Set character size: 0x00=normal, 0x11=double height, 0x22=double width, 0x33=double both
-                const sizeCmd = line.large ? '\x33' : '\x00';
-                prnData += GS + '!' + sizeCmd;
+                // Ensure text fits within canvas width
+                if (xPos < margin) xPos = margin;
+                if (xPos + ctx.measureText(line.text).width > canvas.width - margin) {
+                    // Text is too wide, use smaller font
+                    ctx.font = `${fontWeight} ${fontSize - 2}px 'Courier New', monospace`;
+                }
                 
-                // Add the text content
-                prnData += line.text + LF;
+                // Draw the text
+                ctx.fillText(line.text, xPos, yPos);
                 
-                // Reset formatting after each line
-                prnData += ESC + 'E' + '\x00'; // Bold off
-                prnData += GS + '!' + '\x00';  // Normal size
+                // Move to next line
+                yPos += line.large ? largeLineHeight : normalLineHeight;
             });
             
-            // Add final line feeds and cut command
-            prnData += LF + LF;
-            prnData += GS + 'V' + '\x41' + '\x03'; // Partial cut
+            // Add bottom margin
+            yPos += 16;
             
-            // Convert string to Uint8Array for proper binary handling
-            const encoder = new TextEncoder();
-            const prnBytes = encoder.encode(prnData);
+            // Create final canvas with proper height
+            const finalCanvas = document.createElement('canvas');
+            const finalCtx = finalCanvas.getContext('2d');
+            finalCanvas.width = canvas.width;
+            finalCanvas.height = yPos;
             
-            // Create filename: billername-date-time-receiptnumber.prn
-            const safeDate = receiptData.date.replace(/\//g, '-');
-            const safeTime = receiptData.time.replace(/:/g, '-');
-            const safeBiller = biller.replace(/[^a-zA-Z0-9]/g, '_');
-            const filename = `${safeBiller}-${safeDate}-${safeTime}-${receiptData.number}.prn`;
+            // Fill white background
+            finalCtx.fillStyle = '#ffffff';
+            finalCtx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
             
-            // Try File System Access API if enabled and supported
-            if (useFileSystemAPI && 'showDirectoryPicker' in window) {
-                try {
-                    // Use existing session handle if available
-                    let dirHandle = sessionDirectoryHandle;
+            // Copy the content
+            finalCtx.drawImage(canvas, 0, 0);
+            
+            // Convert canvas to PNG blob
+            return new Promise((resolve) => {
+                finalCanvas.toBlob(async (blob) => {
+                    // Create filename: billername-date-time-receiptnumber.png
+                    const safeDate = receiptData.date.replace(/\//g, '-');
+                    const safeTime = receiptData.time.replace(/:/g, '-');
+                    const safeBiller = biller.replace(/[^a-zA-Z0-9]/g, '_');
+                    const filename = `${safeBiller}-${safeDate}-${safeTime}-${receiptData.number}.png`;
                     
-                    // If no handle, ask user to select folder
-                    if (!dirHandle) {
-                        dirHandle = await window.showDirectoryPicker({
-                            mode: 'readwrite',
-                            startIn: 'downloads'
-                        });
-                        
-                        // Store for rest of session
-                        sessionDirectoryHandle = dirHandle;
-                        localStorage.setItem('receiptFolderName', dirHandle.name);
-                    }
-                    
-                    // Create the file in the selected directory
-                    const fileHandle = await dirHandle.getFileHandle(filename, { create: true });
-                    const writable = await fileHandle.createWritable();
-                    await writable.write(prnBytes);
-                    await writable.close();
-                    
-                    console.log(`Receipt PRN saved to ${dirHandle.name}/${filename}`);
-                    return; // Exit early if successful
-                    
-                } catch (error) {
-                    if (error.name === 'AbortError') {
-                        // User cancelled, ask if they want to disable File System API
-                        if (confirm('❌ Folder selection cancelled.\n\nWould you like to switch to regular downloads instead?\n\n(You can change this back later)')) {
-                            useFileSystemAPI = false;
-                        } else {
-                            return; // Don't save if user cancelled and wants to keep trying
+                    // Try File System Access API if enabled and supported
+                    if (useFileSystemAPI && 'showDirectoryPicker' in window && sessionDirectoryHandle) {
+                        try {
+                            // Create the file in the selected directory
+                            const fileHandle = await sessionDirectoryHandle.getFileHandle(filename, { create: true });
+                            const writable = await fileHandle.createWritable();
+                            await writable.write(blob);
+                            await writable.close();
+                            
+                            console.log(`Receipt PNG saved to ${sessionDirectoryHandle.name}/${filename}`);
+                            resolve();
+                            return;
+                            
+                        } catch (error) {
+                            console.log('Failed to save PNG to selected folder, falling back to download:', error);
+                            // Fall through to standard download method
                         }
-                    } else {
-                        console.log('Failed to save PRN to selected folder, falling back to download:', error);
                     }
-                    // Fall through to standard download method
-                }
-            }
-            
-            // Fallback: Standard download method
-            const blob = new Blob([prnBytes], { type: 'application/octet-stream' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
+                    
+                    // Fallback: Standard download method
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    resolve();
+                }, 'image/png');
+            });
         }
 
         function clearFormAndShow() {
