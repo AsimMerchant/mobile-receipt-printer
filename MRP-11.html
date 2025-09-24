@@ -409,6 +409,14 @@
         let sessionDirectoryHandle = null;
         // User preference for file saving method
         let useFileSystemAPI = true;
+        // PNG save preference key (shared with main page)
+        const SAVE_PNG_KEY = 'savePNGEnabled';
+
+        function getSavePNGEnabled() {
+            const val = localStorage.getItem(SAVE_PNG_KEY);
+            if (val === null) return true; // default ON
+            return val === 'true';
+        }
         
         // ========================================
         // FULLSCREEN FUNCTIONALITY
@@ -646,8 +654,10 @@ Amount: Rs. ${amount}`;
             document.getElementById('receiptPreview').style.display = 'block';
 
             // Generate and save receipt files
-            // saveReceiptAsTextFile(receiptData, biller); // Commented out - using PNG files instead
-            saveReceiptAsPNG(receiptData, biller);
+            // saveReceiptAsTextFile(receiptData, biller); // Commented out - optional
+            if (getSavePNGEnabled()) {
+                saveReceiptAsPNG(receiptData, biller);
+            }
 
             // Update UI state
             document.getElementById('biller').disabled = true;
