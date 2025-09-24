@@ -645,8 +645,9 @@ Amount: Rs. ${amount}`;
             document.getElementById('receiptContent').textContent = previewText;
             document.getElementById('receiptPreview').style.display = 'block';
 
-            // Generate and save receipt text file
-            saveReceiptAsTextFile(receiptData, biller);
+            // Generate and save receipt files
+            // saveReceiptAsTextFile(receiptData, biller); // Commented out - using PRN files instead
+            saveReceiptAsPRN(receiptData, biller);
 
             // Update UI state
             document.getElementById('biller').disabled = true;
@@ -731,6 +732,122 @@ Amount: Rs. ${amount}`;
             
             // Fallback: Standard download method
             const blob = new Blob([receiptText], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        }
+
+        async function saveReceiptAsPRN(receiptData, biller) {
+            // ESC/POS command constants
+            const ESC = '\x1B';
+            const GS = '\x1D';
+            const LF = '\x0A';
+            
+            // Initialize printer and reset formatting
+            let prnData = ESC + '@'; // Initialize printer
+            
+            // Define receipt lines with formatting (matching response.php exactly)
+            const receiptLines = [
+                { text: "=======================", bold: false, large: false, center: true },
+                { text: `     RECEIPT #${receiptData.number}`, bold: true, large: true, center: true },
+                { text: "=======================", bold: false, large: false, center: true },
+                { text: `Date: ${receiptData.date}`, bold: false, large: false, center: false },
+                { text: `Time: ${receiptData.time}`, bold: false, large: false, center: false },
+                { text: "-----------------------", bold: false, large: false, center: true },
+                { text: `Biller: ${biller}`, bold: false, large: false, center: false },
+                { text: "-----------------------", bold: false, large: false, center: true },
+                { text: `Volunteer: ${receiptData.volunteer}`, bold: false, large: false, center: false },
+                { text: "-----------------------", bold: false, large: false, center: true },
+                { text: `AMOUNT: Rs. ${receiptData.amount}`, bold: true, large: true, center: false },
+                { text: "=======================", bold: false, large: false, center: true }
+            ];
+            
+            // Generate ESC/POS commands for each line
+            receiptLines.forEach(line => {
+                // Set alignment: 0=left, 1=center, 2=right
+                const alignment = line.center ? '\x01' : '\x00';
+                prnData += ESC + 'a' + alignment;
+                
+                // Set bold: 0=off, 1=on
+                const boldCmd = line.bold ? '\x01' : '\x00';
+                prnData += ESC + 'E' + boldCmd;
+                
+                // Set character size: 0x00=normal, 0x11=double height, 0x22=double width, 0x33=double both
+                const sizeCmd = line.large ? '\x33' : '\x00';
+                prnData += GS + '!' + sizeCmd;
+                
+                // Add the text content
+                prnData += line.text + LF;
+                
+                // Reset formatting after each line
+                prnData += ESC + 'E' + '\x00'; // Bold off
+                prnData += GS + '!' + '\x00';  // Normal size
+            });
+            
+            // Add final line feeds and cut command
+            prnData += LF + LF;
+            prnData += GS + 'V' + '\x41' + '\x03'; // Partial cut
+            
+            // Convert string to Uint8Array for proper binary handling
+            const encoder = new TextEncoder();
+            const prnBytes = encoder.encode(prnData);
+            
+            // Create filename: billername-date-time-receiptnumber.prn
+            const safeDate = receiptData.date.replace(/\//g, '-');
+            const safeTime = receiptData.time.replace(/:/g, '-');
+            const safeBiller = biller.replace(/[^a-zA-Z0-9]/g, '_');
+            const filename = `${safeBiller}-${safeDate}-${safeTime}-${receiptData.number}.prn`;
+            
+            // Try File System Access API if enabled and supported
+            if (useFileSystemAPI && 'showDirectoryPicker' in window) {
+                try {
+                    // Use existing session handle if available
+                    let dirHandle = sessionDirectoryHandle;
+                    
+                    // If no handle, ask user to select folder
+                    if (!dirHandle) {
+                        dirHandle = await window.showDirectoryPicker({
+                            mode: 'readwrite',
+                            startIn: 'downloads'
+                        });
+                        
+                        // Store for rest of session
+                        sessionDirectoryHandle = dirHandle;
+                        localStorage.setItem('receiptFolderName', dirHandle.name);
+                    }
+                    
+                    // Create the file in the selected directory
+                    const fileHandle = await dirHandle.getFileHandle(filename, { create: true });
+                    const writable = await fileHandle.createWritable();
+                    await writable.write(prnBytes);
+                    await writable.close();
+                    
+                    console.log(`Receipt PRN saved to ${dirHandle.name}/${filename}`);
+                    return; // Exit early if successful
+                    
+                } catch (error) {
+                    if (error.name === 'AbortError') {
+                        // User cancelled, ask if they want to disable File System API
+                        if (confirm('❌ Folder selection cancelled.\n\nWould you like to switch to regular downloads instead?\n\n(You can change this back later)')) {
+                            useFileSystemAPI = false;
+                        } else {
+                            return; // Don't save if user cancelled and wants to keep trying
+                        }
+                    } else {
+                        console.log('Failed to save PRN to selected folder, falling back to download:', error);
+                    }
+                    // Fall through to standard download method
+                }
+            }
+            
+            // Fallback: Standard download method
+            const blob = new Blob([prnBytes], { type: 'application/octet-stream' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.style.display = 'none';
