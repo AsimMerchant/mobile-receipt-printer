@@ -1,5 +1,29 @@
 # Changelog - MRP-9.html (Mobile Receipt Printer)
 
+## [v1.4] - 2025-09-24
+
+### Added
+- **MRP-11-main.html**: New user-facing toggle to enable/disable saving receipts as PNG files.
+  - Button label: "Save PNG: On/Off" in Quick Start section.
+  - Persists state via `localStorage` key `savePNGEnabled` (default: On).
+- **MRP-11.html**: PNG receipt export tuned for 58mm thermal printers (203 DPI ≈ 384px width).
+  - Canvas width: 384px; margins: 16px; dynamic height.
+  - Font: `'Courier New', monospace`; sizes: 14px (normal), 22px (large); line heights: 22/32.
+  - Amount line rendered bold + large for emphasis.
+
+### Changed
+- **MRP-11.html**: PNG saving is now gated by the main page toggle. When `savePNGEnabled` is Off, no PNG is saved.
+- Supersedes prior PRN prototype work in this branch; PNG export is the current approach.
+
+### Technical Notes
+- Shared preference key: `savePNGEnabled` (read/write from both main and receipt pages).
+- Gating point: `previewReceipt()` only invokes `saveReceiptAsPNG(...)` if `savePNGEnabled` is true.
+- Relevant commits (feature/prn-file-generation):
+  - dcbcdb4 — Main page PNG toggle + gated saving
+  - 6da5c6b — Switch from PRN to PNG generation for 58mm thermal printer
+  - 399248d — Initial PRN generator prototype (now superseded)
+
+
 ## [v1.3] - 2025-09-22
 
 ### Changed

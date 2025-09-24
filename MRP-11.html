@@ -409,6 +409,14 @@
         let sessionDirectoryHandle = null;
         // User preference for file saving method
         let useFileSystemAPI = true;
+        // PNG save preference key (shared with main page)
+        const SAVE_PNG_KEY = 'savePNGEnabled';
+
+        function getSavePNGEnabled() {
+            const val = localStorage.getItem(SAVE_PNG_KEY);
+            if (val === null) return true; // default ON
+            return val === 'true';
+        }
         
         // ========================================
         // FULLSCREEN FUNCTIONALITY
@@ -645,8 +653,11 @@ Amount: Rs. ${amount}`;
             document.getElementById('receiptContent').textContent = previewText;
             document.getElementById('receiptPreview').style.display = 'block';
 
-            // Generate and save receipt text file
-            saveReceiptAsTextFile(receiptData, biller);
+            // Generate and save receipt files
+            // saveReceiptAsTextFile(receiptData, biller); // Commented out - optional
+            if (getSavePNGEnabled()) {
+                saveReceiptAsPNG(receiptData, biller);
+            }
 
             // Update UI state
             document.getElementById('biller').disabled = true;
@@ -740,6 +751,140 @@ Amount: Rs. ${amount}`;
             a.click();
             window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
+        }
+
+        async function saveReceiptAsPNG(receiptData, biller) {
+            // Create canvas optimized for 58mm thermal printer (384px width, 203 DPI)
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Set canvas dimensions for 58mm thermal printer
+            canvas.width = 384; // 58mm at 203 DPI
+            const margin = 16;   // Side margins
+            const contentWidth = canvas.width - (margin * 2);
+            
+            // Set initial height (will adjust based on content)
+            canvas.height = 600;
+            
+            // Set background to white
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Set text properties
+            ctx.fillStyle = '#000000';
+            ctx.textBaseline = 'top';
+            
+            // Define receipt lines with formatting (matching response.php)
+            const receiptLines = [
+                { text: "=======================", bold: false, large: false, center: true },
+                { text: `     RECEIPT #${receiptData.number}`, bold: true, large: true, center: true },
+                { text: "=======================", bold: false, large: false, center: true },
+                { text: `Date: ${receiptData.date}`, bold: false, large: false, center: false },
+                { text: `Time: ${receiptData.time}`, bold: false, large: false, center: false },
+                { text: "-----------------------", bold: false, large: false, center: true },
+                { text: `Biller: ${biller}`, bold: false, large: false, center: false },
+                { text: "-----------------------", bold: false, large: false, center: true },
+                { text: `Volunteer: ${receiptData.volunteer}`, bold: false, large: false, center: false },
+                { text: "-----------------------", bold: false, large: false, center: true },
+                { text: `AMOUNT: Rs. ${receiptData.amount}`, bold: true, large: true, center: false },
+                { text: "=======================", bold: false, large: false, center: true }
+            ];
+            
+            // Font settings optimized for 58mm thermal printer
+            const normalFontSize = 14;
+            const largeFontSize = 22;  // Larger for better visibility on thermal printer
+            const normalLineHeight = 22;
+            const largeLineHeight = 32;
+            
+            // Draw each line
+            let yPos = 16; // Top margin
+            
+            receiptLines.forEach(line => {
+                // Set font based on formatting
+                let fontSize = line.large ? largeFontSize : normalFontSize;
+                let fontWeight = line.bold ? 'bold' : 'normal';
+                ctx.font = `${fontWeight} ${fontSize}px 'Courier New', monospace`;
+                
+                // Calculate x position for alignment
+                let xPos;
+                if (line.center) {
+                    const textWidth = ctx.measureText(line.text).width;
+                    xPos = (canvas.width - textWidth) / 2;
+                } else {
+                    xPos = margin; // Left margin
+                }
+                
+                // Ensure text fits within canvas width
+                if (xPos < margin) xPos = margin;
+                if (xPos + ctx.measureText(line.text).width > canvas.width - margin) {
+                    // Text is too wide, use smaller font
+                    ctx.font = `${fontWeight} ${fontSize - 2}px 'Courier New', monospace`;
+                }
+                
+                // Draw the text
+                ctx.fillText(line.text, xPos, yPos);
+                
+                // Move to next line
+                yPos += line.large ? largeLineHeight : normalLineHeight;
+            });
+            
+            // Add bottom margin
+            yPos += 16;
+            
+            // Create final canvas with proper height
+            const finalCanvas = document.createElement('canvas');
+            const finalCtx = finalCanvas.getContext('2d');
+            finalCanvas.width = canvas.width;
+            finalCanvas.height = yPos;
+            
+            // Fill white background
+            finalCtx.fillStyle = '#ffffff';
+            finalCtx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+            
+            // Copy the content
+            finalCtx.drawImage(canvas, 0, 0);
+            
+            // Convert canvas to PNG blob
+            return new Promise((resolve) => {
+                finalCanvas.toBlob(async (blob) => {
+                    // Create filename: billername-date-time-receiptnumber.png
+                    const safeDate = receiptData.date.replace(/\//g, '-');
+                    const safeTime = receiptData.time.replace(/:/g, '-');
+                    const safeBiller = biller.replace(/[^a-zA-Z0-9]/g, '_');
+                    const filename = `${safeBiller}-${safeDate}-${safeTime}-${receiptData.number}.png`;
+                    
+                    // Try File System Access API if enabled and supported
+                    if (useFileSystemAPI && 'showDirectoryPicker' in window && sessionDirectoryHandle) {
+                        try {
+                            // Create the file in the selected directory
+                            const fileHandle = await sessionDirectoryHandle.getFileHandle(filename, { create: true });
+                            const writable = await fileHandle.createWritable();
+                            await writable.write(blob);
+                            await writable.close();
+                            
+                            console.log(`Receipt PNG saved to ${sessionDirectoryHandle.name}/${filename}`);
+                            resolve();
+                            return;
+                            
+                        } catch (error) {
+                            console.log('Failed to save PNG to selected folder, falling back to download:', error);
+                            // Fall through to standard download method
+                        }
+                    }
+                    
+                    // Fallback: Standard download method
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    resolve();
+                }, 'image/png');
+            });
         }
 
         function clearFormAndShow() {

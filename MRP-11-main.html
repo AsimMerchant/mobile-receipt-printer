@@ -382,6 +382,7 @@
                 <a href="MRP-11-settings.html" class="btn btn-info">⚙️ Server Settings</a>
                 <button onclick="chooseReceiptFolder()" class="btn btn-warning">📁 Choose Receipt Folder</button>
                 <button onclick="toggleNameListSection()" class="btn btn-secondary">📝 Manage Names</button>
+                <button id="togglePngSaveBtn" onclick="togglePngSave()" class="btn btn-info">🖼️ Save PNG: On</button>
             </div>
         </div>
 
@@ -528,6 +529,33 @@
         // ========================================
         // PAGE FUNCTIONALITY
         // ========================================
+
+        // PNG Save Preference (shared across pages)
+        const SAVE_PNG_KEY = 'savePNGEnabled';
+
+        function getSavePNGEnabled() {
+            const val = localStorage.getItem(SAVE_PNG_KEY);
+            if (val === null) return true; // default ON
+            return val === 'true';
+        }
+
+        function setSavePNGEnabled(enabled) {
+            localStorage.setItem(SAVE_PNG_KEY, enabled ? 'true' : 'false');
+        }
+
+        function updatePngToggleButton() {
+            const btn = document.getElementById('togglePngSaveBtn');
+            if (!btn) return;
+            const enabled = getSavePNGEnabled();
+            btn.textContent = enabled ? '🖼️ Save PNG: On' : '🖼️ Save PNG: Off';
+            btn.className = 'btn ' + (enabled ? 'btn-info' : 'btn-secondary');
+        }
+
+        function togglePngSave() {
+            const next = !getSavePNGEnabled();
+            setSavePNGEnabled(next);
+            updatePngToggleButton();
+        }
         
         function toggleSetupGuide() {
             const guide = document.getElementById('setupGuide');
@@ -953,6 +981,11 @@
 
         // Auto-test connection on page load
         window.addEventListener('load', function() {
+            // Initialize PNG toggle default and button label
+            if (localStorage.getItem(SAVE_PNG_KEY) === null) {
+                setSavePNGEnabled(true);
+            }
+            updatePngToggleButton();
             // Small delay to let page fully render
             setTimeout(function() {
                 fetch('response.php', { method: 'HEAD' })
